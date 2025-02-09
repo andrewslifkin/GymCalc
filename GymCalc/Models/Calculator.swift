@@ -113,22 +113,104 @@ final class Calculator: ObservableObject {
     
     // MARK: - Available Barbell Management
     func addAvailableBarbell(_ barbell: Barbell) {
-        if !availableBarbells.contains(where: { $0.id == barbell.id }) {
-            availableBarbells.append(barbell)
+        // Prevent duplicate barbells
+        guard !availableBarbells.contains(where: { $0.id == barbell.id }) else {
+            print("❌ Barbell already exists")
+            return
+        }
+        
+        // Add the barbell
+        availableBarbells.append(barbell)
+        
+        // Persist changes
+        Task {
+            do {
+                let encoder = JSONEncoder()
+                let encodedBarbells = try encoder.encode(availableBarbells)
+                UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
+                
+                // Ensure UI updates on main thread
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+                
+                print("✅ Added barbell: \(barbell.name)")
+            } catch {
+                print("❌ Error encoding barbell: \(error)")
+            }
+        }
+    }
+    
+    func updateAvailableBarbell(_ barbell: Barbell) {
+        // Find and update the barbell
+        if let index = availableBarbells.firstIndex(where: { $0.id == barbell.id }) {
+            availableBarbells[index] = barbell
+            
+            // Persist changes
+            Task {
+                do {
+                    let encoder = JSONEncoder()
+                    let encodedBarbells = try encoder.encode(availableBarbells)
+                    UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
+                    
+                    // Ensure UI updates on main thread
+                    DispatchQueue.main.async {
+                        self.objectWillChange.send()
+                    }
+                    
+                    print("✅ Updated barbell: \(barbell.name)")
+                } catch {
+                    print("❌ Error encoding barbell: \(error)")
+                }
+            }
+        } else {
+            // If not found, add as a new barbell
+            addAvailableBarbell(barbell)
         }
     }
     
     func removeAvailableBarbell(_ barbell: Barbell) {
+        // Prevent removing all barbells
+        guard availableBarbells.count > 1 else {
+            print("❌ Cannot remove the last barbell")
+            return
+        }
+        
+        // Prevent removing non-custom barbells from presets
+        guard barbell.isCustom else {
+            print("❌ Cannot remove preset barbell")
+            return
+        }
+        
+        // Remove the barbell
         availableBarbells.removeAll { $0.id == barbell.id }
         
-        // If the currently selected barbell is removed, reset to standard
+        // If the current selected barbell is removed, select the first available
         if selectedBarbell.id == barbell.id {
-            selectedBarbell = .standard
+            selectedBarbell = availableBarbells.first ?? .standard
+        }
+        
+        // Persist changes
+        Task {
+            do {
+                let encoder = JSONEncoder()
+                let encodedBarbells = try encoder.encode(availableBarbells)
+                UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
+                
+                // Ensure UI updates on main thread
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+                
+                print("✅ Removed barbell: \(barbell.name)")
+            } catch {
+                print("❌ Error encoding barbell removal: \(error)")
+            }
         }
     }
     
     func updateBarbellVisibility(for barbellId: UUID, isVisible: Bool) {
-        guard var index = availableBarbells.firstIndex(where: { $0.id == barbellId }) else {
+        guard let index = availableBarbells.firstIndex(where: { $0.id == barbellId }) else {
             return
         }
         
@@ -152,11 +234,6 @@ final class Calculator: ObservableObject {
                 let encoder = JSONEncoder()
                 let encodedBarbells = try encoder.encode(availableBarbells)
                 UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
-                
-                // Ensure UI updates on main thread
-                DispatchQueue.main.async {
-                    self.objectWillChange.send()
-                }
             } catch {
                 print("Error encoding barbells: \(error)")
             }
@@ -468,45 +545,47 @@ final class Calculator: ObservableObject {
         }
     }
     
-    func addCustomPlateWeight(_ weight: Double) {
-        // Prevent duplicate plates
-        guard !availablePlates.contains(weight) else {
+    func addCustomPlateWeight(_ plateWeight: Double) {
+        // Prevent duplicates
+        guard !availablePlateWeights.contains(plateWeight) else {
+            print("❌ Plate weight \(plateWeight) already exists")
             return
         }
         
-        // Add custom plate
-        availablePlates.append(weight)
-        selectedPlateWeights.append(weight)
+        // Validate plate weight range
+        guard plateWeight > 0 && plateWeight <= 100 else {
+            print("❌ Invalid plate weight: \(plateWeight)")
+            return
+        }
         
-        // Sort plates in ascending order
-        availablePlates.sort()
+        // Add plate weight and sort
+        availablePlateWeights.append(plateWeight)
+        availablePlateWeights.sort()
+        
+        // Automatically select the new plate
+        selectedPlateWeights.append(plateWeight)
         selectedPlateWeights.sort()
         
         // Persist changes
-        Task { @MainActor in
-            do {
-                let encoder = JSONEncoder()
-                let encodedPlates = try encoder.encode(availablePlates)
-                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
-                
-                // Ensure UI updates on main thread
-                DispatchQueue.main.async {
-                    self.objectWillChange.send()
-                }
-            } catch {
-                print("Error encoding custom plate: \(error)")
+        Task {
+            if let encoded = try? JSONEncoder().encode(availablePlateWeights) {
+                UserDefaults.standard.set(encoded, forKey: Self.availablePlatesKey)
             }
         }
+        
+        // Trigger UI update
+        objectWillChange.send()
     }
     
     func removeCustomPlateWeight(_ weight: Double) {
         // Prevent removing standard plates
         guard weight > 45 else {
+            print("❌ Cannot remove standard plate: \(weight)")
             return
         }
         
         // Remove from available and selected plates
-        availablePlates.removeAll { $0 == weight }
+        availablePlateWeights.removeAll { $0 == weight }
         selectedPlateWeights.removeAll { $0 == weight }
         
         // Ensure at least one plate remains
@@ -515,18 +594,20 @@ final class Calculator: ObservableObject {
         }
         
         // Persist changes
-        Task { @MainActor in
+        Task {
             do {
                 let encoder = JSONEncoder()
-                let encodedPlates = try encoder.encode(availablePlates)
+                let encodedPlates = try encoder.encode(availablePlateWeights)
                 UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
                 
                 // Ensure UI updates on main thread
                 DispatchQueue.main.async {
                     self.objectWillChange.send()
                 }
+                
+                print("✅ Removed plate weight: \(weight)")
             } catch {
-                print("Error encoding plate removal: \(error)")
+                print("❌ Error encoding plate removal: \(error)")
             }
         }
     }

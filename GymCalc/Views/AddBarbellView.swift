@@ -10,6 +10,7 @@ struct AddBarbellView: View {
     @State private var name: String
     @State private var weight: String
     @State private var weightUnit: Unit
+    @State private var errorMessage: String?
     
     init(
         existingBarbell: Barbell? = nil,
@@ -29,8 +30,23 @@ struct AddBarbellView: View {
     }
     
     private var isValidInput: Bool {
-        guard let weightValue = Double(weight) else { return false }
-        return !name.isEmpty && weightValue > 0
+        guard let weightValue = Double(weight) else { 
+            errorMessage = "Invalid weight"
+            return false 
+        }
+        
+        guard !name.isEmpty else {
+            errorMessage = "Name cannot be empty"
+            return false
+        }
+        
+        guard weightValue > 0 && weightValue <= 200 else {
+            errorMessage = "Weight must be between 0 and 200"
+            return false
+        }
+        
+        errorMessage = nil
+        return true
     }
     
     var body: some View {
@@ -49,6 +65,12 @@ struct AddBarbellView: View {
                             }
                         }
                     }
+                    
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
                 }
             }
             .navigationTitle(existingBarbell == nil ? "Add Barbell" : "Edit Barbell")
@@ -57,18 +79,17 @@ struct AddBarbellView: View {
                     onCancel()
                 },
                 trailing: Button("Save") {
-                    guard let weightValue = Double(weight) else { return }
+                    guard isValidInput else { return }
                     
                     let newBarbell = Barbell(
                         id: existingBarbell?.id ?? UUID(),
                         name: name,
-                        weight: Weight(value: weightValue, unit: weightUnit),
+                        weight: Weight(value: Double(weight) ?? 0, unit: weightUnit),
                         isCustom: true
                     )
                     
                     onSave(newBarbell)
                 }
-                .disabled(!isValidInput)
             )
         }
     }

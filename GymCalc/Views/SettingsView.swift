@@ -10,17 +10,17 @@ struct SettingsView: View {
     @State private var selectedBarbellToEdit: Barbell?
 
     private func addCustomPlate() {
-        guard 
-            let weight = Double(newPlateWeight),
-            weight > 45,  // Ensure it's a custom plate
-            weight <= 100  // Reasonable plate weight limit
-        else {
+        guard let weight = Double(newPlateWeight) else {
+            print("❌ Invalid plate weight: \(newPlateWeight)")
             return
         }
         
-        withAnimation {
-            calculator.addCustomPlateWeight(weight)
+        guard weight > 0 && weight <= 100 else {
+            print("❌ Plate weight out of valid range: \(weight)")
+            return
         }
+        
+        calculator.addCustomPlateWeight(weight)
         
         // Reset and dismiss sheet
         newPlateWeight = ""
@@ -46,12 +46,17 @@ struct SettingsView: View {
     }
     
     private func saveBarbell(_ editedBarbell: Barbell) {
-        // If barbell exists, update it
-        if let index = calculator.availableBarbells.firstIndex(where: { $0.id == editedBarbell.id }) {
-            calculator.availableBarbells[index] = editedBarbell
+        // Validate barbell before saving
+        guard editedBarbell.weight.value > 0 else {
+            print("❌ Invalid barbell weight")
+            return
+        }
+        
+        // Update or add barbell
+        if calculator.availableBarbells.contains(where: { $0.id == editedBarbell.id }) {
+            calculator.updateAvailableBarbell(editedBarbell)
         } else {
-            // Add new barbell
-            calculator.availableBarbells.append(editedBarbell)
+            calculator.addAvailableBarbell(editedBarbell)
         }
         
         // Reset edit state
@@ -84,9 +89,19 @@ struct SettingsView: View {
                         .padding(.vertical, 4)
                     }
                     .onDelete(perform: deletePlates)
+                    
+                    Button(action: { 
+                        showingAddPlateSheet = true 
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Plate")
+                        }
+                        .foregroundColor(.blue)
+                    }
                 }
                 
-                Section("Barbells") {
+                Section("Equipment") {
                     ForEach(calculator.availableBarbells) { barbell in
                         HStack {
                             VStack(alignment: .leading) {
@@ -126,47 +141,26 @@ struct SettingsView: View {
                             .tint(.blue)
                         }
                     }
-                }
-                
-                Section {
+                    
                     Button(action: { 
-                        showingAddPlateSheet = true 
+                        selectedBarbellToEdit = nil
+                        showingAddBarbellSheet = true 
                     }) {
                         HStack {
-                            Image(systemName: "plus")
-                            Text("Add Custom Plate")
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Equipment")
                         }
                         .foregroundColor(.blue)
                     }
-                    
+                }
+                
+                Section {
                     Button(action: {
                         calculator.resetPlates()
                     }) {
                         HStack {
                             Image(systemName: "arrow.counterclockwise")
                             Text("Reset Plates to Default")
-                        }
-                        .foregroundColor(.blue)
-                    }
-                    
-                    Button(action: { 
-                        selectedBarbellToEdit = nil
-                        showingAddBarbellSheet = true 
-                    }) {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("Add Custom Equipment Weight")
-                        }
-                        .foregroundColor(.blue)
-                    }
-                    
-                    Button(action: { 
-                        selectedBarbellToEdit = nil
-                        showingAddBarbellSheet = true 
-                    }) {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("Add Custom Barbell")
                         }
                         .foregroundColor(.blue)
                     }
