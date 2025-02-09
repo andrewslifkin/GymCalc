@@ -6,31 +6,39 @@ struct PlateVisualizer: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Per side:")
+            // Separate sections for Equipment and Plates per side
+            if let equipmentPlate = plateCounts.first(where: { $0.label != nil }) {
+                Text("Equipment:")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal)
+                
+                Text(equipmentPlate.formattedString)
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .padding(.horizontal)
+                
+                // Add vertical spacing between sections
+                Spacer()
+                    .frame(height: 16)
+            }
+            
+            Text("Plates per side:")
                 .font(.subheadline)
                 .foregroundColor(.gray)
                 .padding(.horizontal)
             
-            if plateCounts.isEmpty {
+            if plateCounts.filter({ $0.label == nil }).isEmpty {
                 Text("Add weight to see plate breakdown")
                     .font(.body)
                     .foregroundColor(.gray)
                     .padding(.horizontal)
             } else {
-                ForEach(plateCounts) { plateCount in
-                    HStack(spacing: 8) {
-                        Text(String(format: "%.1f %@", 
-                             plateCount.weight,
-                             unit.symbol))
-                            .font(.system(.body, design: .rounded))
-                            .fontWeight(.medium)
-                        
-                        Text("× \(plateCount.count)")
-                            .font(.system(.body, design: .rounded))
-                            .fontWeight(.bold)
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal)
+                ForEach(plateCounts.filter { $0.label == nil }) { plateCount in
+                    Text(plateCount.formattedString)
+                        .font(.system(.body, design: .rounded))
+                        .fontWeight(.medium)
+                        .padding(.horizontal)
                 }
             }
         }

@@ -389,6 +389,33 @@ final class Calculator: ObservableObject {
         let id = UUID()
         let weight: Double
         let count: Int
+        let label: String?  // Optional label for equipment
+        let unit: Unit      // Add unit to support different weight units
+        
+        // Convenience initializer for plates
+        init(weight: Double, count: Int, unit: Unit = .kg) {
+            self.weight = weight
+            self.count = count
+            self.label = nil
+            self.unit = unit
+        }
+        
+        // Initializer for equipment with label
+        init(weight: Double, count: Int, label: String, unit: Unit = .kg) {
+            self.weight = weight
+            self.count = count
+            self.label = label
+            self.unit = unit
+        }
+        
+        // Formatted string representation
+        var formattedString: String {
+            if let label = label {
+                return "\(label): \(String(format: "%.1f", weight)) \(unit.symbol)"
+            } else {
+                return "\(String(format: "%.1f", weight)) \(unit.symbol) x \(count)"
+            }
+        }
     }
     
     var platesPerSide: [PlateCount] {
@@ -423,6 +450,19 @@ final class Calculator: ObservableObject {
                 
                 // Early exit if remaining weight is negligible
                 if remainingWeight < 0.1 { break }
+            }
+            
+            // Add barbell weight as first item in plateCounts if considerBarbellWeight is true
+            if considerBarbellWeight {
+                plateCounts.insert(
+                    PlateCount(
+                        weight: barWeightInKg, 
+                        count: 1, 
+                        label: selectedBarbell.name,
+                        unit: .kg
+                    ), 
+                    at: 0
+                )
             }
             
             // Cache the result to improve subsequent calculations
