@@ -295,6 +295,7 @@ struct WeightInput: View {
                     .foregroundColor(.gray)
             }
             .tint(.white)
+            .animation(.easeInOut(duration: 0.1), value: calculator.targetWeight)
         }
     }
 }
