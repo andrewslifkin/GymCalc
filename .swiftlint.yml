@@ -1,0 +1,93 @@
+excluded:
+  - Pods
+  - .build
+  - DerivedData
+  - fastlane
+  - Scripts
+
+disabled_rules:
+  - trailing_whitespace
+  - todo
+
+opt_in_rules:
+  - array_init
+  - attributes
+  - closure_end_indentation
+  - closure_spacing
+  - collection_alignment
+  - contains_over_filter_count
+  - empty_count
+  - empty_string
+  - explicit_init
+  - fallthrough
+  - fatal_error_message
+  - first_where
+  - force_unwrapping
+  - identical_operands
+  - implicit_return
+  - joined_default_parameter
+  - last_where
+  - legacy_random
+  - let_var_whitespace
+  - literal_expression_end_indentation
+  - multiline_arguments
+  - multiline_function_chains
+  - multiline_literal_brackets
+  - multiline_parameters
+  - operator_usage_whitespace
+  - overridden_super_call
+  - pattern_matching_keywords
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - strict_fileprivate
+  - toggle_bool
+  - trailing_closure
+  - unneeded_parentheses_in_closure_argument
+  - unused_import
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace_closing_braces
+  - vertical_whitespace_opening_braces
+  - yoda_condition
+
+analyzer_rules:
+  - explicit_self
+  - unused_declaration
+  - unused_import
+
+force_cast: warning
+force_try:
+  severity: warning
+line_length:
+  warning: 120
+  error: 200
+  ignores_function_declarations: true
+  ignores_comments: true
+  ignores_urls: true
+function_body_length:
+  warning: 60
+  error: 100
+function_parameter_count:
+  warning: 6
+  error: 8
+large_tuple:
+  warning: 3
+  error: 4
+type_body_length:
+  warning: 300
+  error: 400
+file_length:
+  warning: 500
+  error: 1000
+  ignore_comment_only_lines: true
+cyclomatic_complexity:
+  warning: 15
+  error: 25
+reporter: "xcode"
+
+custom_rules:
+  array_constructor:
+    name: "Array/Dictionary Constructor"
+    regex: '[let,var] .+ = (Array|Dictionary)<.+>\\(\\)'
+    message: "Prefer [] over Array<T>() and [:] over Dictionary<K,V>()"
+    severity: warning

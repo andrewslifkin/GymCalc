@@ -1,14 +1,14 @@
 //
-//  GymCalTests.swift
-//  GymCalTests
+//  GymCalcTests.swift
+//  GymCalcTests
 //
-//  Created by Andrew Slifkin on 1/18/25.
+//  Created by Andrew Slifkin on 2/2/25.
 //
 
 import Testing
-@testable import GymCal
+@testable import GymCalc
 
-struct GymCalTests {
+struct GymCalcTests {
 
     @Test func example() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.

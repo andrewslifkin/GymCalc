@@ -1,13 +1,13 @@
 //
-//  GymCalUITestsLaunchTests.swift
-//  GymCalUITests
+//  GymCalcUITestsLaunchTests.swift
+//  GymCalcUITests
 //
-//  Created by Andrew Slifkin on 1/18/25.
+//  Created by Andrew Slifkin on 2/2/25.
 //
 
 import XCTest
 
-final class GymCalUITestsLaunchTests: XCTestCase {
+final class GymCalcUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

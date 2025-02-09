@@ -1,11 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1620"
+   LastUpgradeVersion = "1500"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES"
-      buildArchitectures = "Automatic">
+      buildImplicitDependencies = "YES">
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Verify Resources"
+               scriptText = "cd &quot;${PROJECT_DIR}&quot;&#10;./Scripts/verify_resources.sh">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "C108B2CD2D4FB353001AE4D5"
+                     BuildableName = "GymCalc.app"
+                     BlueprintName = "GymCalc"
+                     ReferencedContainer = "container:GymCalc.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run SwiftLint"
+               scriptText = "if which swiftlint &gt;/dev/null; then&#10;  swiftlint&#10;else&#10;  echo &quot;warning: SwiftLint not installed&quot;&#10;fi">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "C108B2CD2D4FB353001AE4D5"
+                     BuildableName = "GymCalc.app"
+                     BlueprintName = "GymCalc"
+                     ReferencedContainer = "container:GymCalc.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -15,10 +48,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C19CAA602D3BDEA100CFBE85"
+               BlueprintIdentifier = "C108B2CD2D4FB353001AE4D5"
                BuildableName = "GymCalc.app"
                BlueprintName = "GymCalc"
-               ReferencedContainer = "container:GymCal.xcodeproj">
+               ReferencedContainer = "container:GymCalc.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,30 +62,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
-      <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C19CAA702D3BDEA300CFBE85"
-               BuildableName = "GymCalcTests.xctest"
-               BlueprintName = "GymCalcTests"
-               ReferencedContainer = "container:GymCal.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C19CAA7A2D3BDEA300CFBE85"
-               BuildableName = "GymCalcUITests.xctest"
-               BlueprintName = "GymCalcUITests"
-               ReferencedContainer = "container:GymCal.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -68,10 +77,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C19CAA602D3BDEA100CFBE85"
+            BlueprintIdentifier = "C108B2CD2D4FB353001AE4D5"
             BuildableName = "GymCalc.app"
             BlueprintName = "GymCalc"
-            ReferencedContainer = "container:GymCal.xcodeproj">
+            ReferencedContainer = "container:GymCalc.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -85,10 +94,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C19CAA602D3BDEA100CFBE85"
+            BlueprintIdentifier = "C108B2CD2D4FB353001AE4D5"
             BuildableName = "GymCalc.app"
             BlueprintName = "GymCalc"
-            ReferencedContainer = "container:GymCal.xcodeproj">
+            ReferencedContainer = "container:GymCalc.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
@@ -97,7 +106,6 @@
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
-      customArchiveName = "GymCalc"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

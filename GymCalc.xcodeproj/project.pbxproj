@@ -7,62 +7,62 @@
 	objects = {
 
 /* Begin PBXContainerItemProxy section */
-		C19CAA722D3BDEA300CFBE85 /* PBXContainerItemProxy */ = {
+		C108B2DF2D4FB356001AE4D5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = C19CAA592D3BDEA100CFBE85 /* Project object */;
+			containerPortal = C108B2C62D4FB353001AE4D5 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C19CAA602D3BDEA100CFBE85;
-			remoteInfo = GymCal;
+			remoteGlobalIDString = C108B2CD2D4FB353001AE4D5;
+			remoteInfo = GymCalc;
 		};
-		C19CAA7C2D3BDEA300CFBE85 /* PBXContainerItemProxy */ = {
+		C108B2E92D4FB356001AE4D5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = C19CAA592D3BDEA100CFBE85 /* Project object */;
+			containerPortal = C108B2C62D4FB353001AE4D5 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = C19CAA602D3BDEA100CFBE85;
-			remoteInfo = GymCal;
+			remoteGlobalIDString = C108B2CD2D4FB353001AE4D5;
+			remoteInfo = GymCalc;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		C19CAA612D3BDEA100CFBE85 /* GymCalc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GymCalc.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C19CAA712D3BDEA300CFBE85 /* GymCalcTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymCalcTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		C19CAA7B2D3BDEA300CFBE85 /* GymCalcUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymCalcUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C108B2CE2D4FB354001AE4D5 /* GymCalc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GymCalc.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C108B2DE2D4FB356001AE4D5 /* GymCalcTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymCalcTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C108B2E82D4FB356001AE4D5 /* GymCalcUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GymCalcUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C19CAA632D3BDEA200CFBE85 /* GymCal */ = {
+		C108B2D02D4FB354001AE4D5 /* GymCalc */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GymCal;
+			path = GymCalc;
 			sourceTree = "<group>";
 		};
-		C19CAA742D3BDEA300CFBE85 /* GymCalTests */ = {
+		C108B2E12D4FB356001AE4D5 /* GymCalcTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GymCalTests;
+			path = GymCalcTests;
 			sourceTree = "<group>";
 		};
-		C19CAA7E2D3BDEA300CFBE85 /* GymCalUITests */ = {
+		C108B2EB2D4FB356001AE4D5 /* GymCalcUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = GymCalUITests;
+			path = GymCalcUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		C19CAA5E2D3BDEA100CFBE85 /* Frameworks */ = {
+		C108B2CB2D4FB353001AE4D5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA6E2D3BDEA300CFBE85 /* Frameworks */ = {
+		C108B2DB2D4FB356001AE4D5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA782D3BDEA300CFBE85 /* Frameworks */ = {
+		C108B2E52D4FB356001AE4D5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -72,22 +72,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C19CAA582D3BDEA100CFBE85 = {
+		C108B2C52D4FB353001AE4D5 = {
 			isa = PBXGroup;
 			children = (
-				C19CAA632D3BDEA200CFBE85 /* GymCal */,
-				C19CAA742D3BDEA300CFBE85 /* GymCalTests */,
-				C19CAA7E2D3BDEA300CFBE85 /* GymCalUITests */,
-				C19CAA622D3BDEA200CFBE85 /* Products */,
+				C108B2D02D4FB354001AE4D5 /* GymCalc */,
+				C108B2E12D4FB356001AE4D5 /* GymCalcTests */,
+				C108B2EB2D4FB356001AE4D5 /* GymCalcUITests */,
+				C108B2CF2D4FB354001AE4D5 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		C19CAA622D3BDEA200CFBE85 /* Products */ = {
+		C108B2CF2D4FB354001AE4D5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C19CAA612D3BDEA100CFBE85 /* GymCalc.app */,
-				C19CAA712D3BDEA300CFBE85 /* GymCalcTests.xctest */,
-				C19CAA7B2D3BDEA300CFBE85 /* GymCalcUITests.xctest */,
+				C108B2CE2D4FB354001AE4D5 /* GymCalc.app */,
+				C108B2DE2D4FB356001AE4D5 /* GymCalcTests.xctest */,
+				C108B2E82D4FB356001AE4D5 /* GymCalcUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,134 +95,134 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C19CAA602D3BDEA100CFBE85 /* GymCalc */ = {
+		C108B2CD2D4FB353001AE4D5 /* GymCalc */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C19CAA852D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalc" */;
+			buildConfigurationList = C108B2F22D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalc" */;
 			buildPhases = (
-				C19CAA5D2D3BDEA100CFBE85 /* Sources */,
-				C19CAA5E2D3BDEA100CFBE85 /* Frameworks */,
-				C19CAA5F2D3BDEA100CFBE85 /* Resources */,
+				C108B2CA2D4FB353001AE4D5 /* Sources */,
+				C108B2CB2D4FB353001AE4D5 /* Frameworks */,
+				C108B2CC2D4FB353001AE4D5 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C19CAA632D3BDEA200CFBE85 /* GymCal */,
+				C108B2D02D4FB354001AE4D5 /* GymCalc */,
 			);
 			name = GymCalc;
 			packageProductDependencies = (
 			);
-			productName = GymCal;
-			productReference = C19CAA612D3BDEA100CFBE85 /* GymCalc.app */;
+			productName = GymCalc;
+			productReference = C108B2CE2D4FB354001AE4D5 /* GymCalc.app */;
 			productType = "com.apple.product-type.application";
 		};
-		C19CAA702D3BDEA300CFBE85 /* GymCalcTests */ = {
+		C108B2DD2D4FB356001AE4D5 /* GymCalcTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C19CAA882D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalcTests" */;
+			buildConfigurationList = C108B2F52D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalcTests" */;
 			buildPhases = (
-				C19CAA6D2D3BDEA300CFBE85 /* Sources */,
-				C19CAA6E2D3BDEA300CFBE85 /* Frameworks */,
-				C19CAA6F2D3BDEA300CFBE85 /* Resources */,
+				C108B2DA2D4FB356001AE4D5 /* Sources */,
+				C108B2DB2D4FB356001AE4D5 /* Frameworks */,
+				C108B2DC2D4FB356001AE4D5 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				C19CAA732D3BDEA300CFBE85 /* PBXTargetDependency */,
+				C108B2E02D4FB356001AE4D5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				C19CAA742D3BDEA300CFBE85 /* GymCalTests */,
+				C108B2E12D4FB356001AE4D5 /* GymCalcTests */,
 			);
 			name = GymCalcTests;
 			packageProductDependencies = (
 			);
 			productName = GymCalcTests;
-			productReference = C19CAA712D3BDEA300CFBE85 /* GymCalcTests.xctest */;
+			productReference = C108B2DE2D4FB356001AE4D5 /* GymCalcTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		C19CAA7A2D3BDEA300CFBE85 /* GymCalcUITests */ = {
+		C108B2E72D4FB356001AE4D5 /* GymCalcUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C19CAA8B2D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalcUITests" */;
+			buildConfigurationList = C108B2F82D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalcUITests" */;
 			buildPhases = (
-				C19CAA772D3BDEA300CFBE85 /* Sources */,
-				C19CAA782D3BDEA300CFBE85 /* Frameworks */,
-				C19CAA792D3BDEA300CFBE85 /* Resources */,
+				C108B2E42D4FB356001AE4D5 /* Sources */,
+				C108B2E52D4FB356001AE4D5 /* Frameworks */,
+				C108B2E62D4FB356001AE4D5 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				C19CAA7D2D3BDEA300CFBE85 /* PBXTargetDependency */,
+				C108B2EA2D4FB356001AE4D5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				C19CAA7E2D3BDEA300CFBE85 /* GymCalUITests */,
+				C108B2EB2D4FB356001AE4D5 /* GymCalcUITests */,
 			);
 			name = GymCalcUITests;
 			packageProductDependencies = (
 			);
 			productName = GymCalcUITests;
-			productReference = C19CAA7B2D3BDEA300CFBE85 /* GymCalcUITests.xctest */;
+			productReference = C108B2E82D4FB356001AE4D5 /* GymCalcUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		C19CAA592D3BDEA100CFBE85 /* Project object */ = {
+		C108B2C62D4FB353001AE4D5 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					C19CAA602D3BDEA100CFBE85 = {
+					C108B2CD2D4FB353001AE4D5 = {
 						CreatedOnToolsVersion = 16.2;
 					};
-					C19CAA702D3BDEA300CFBE85 = {
+					C108B2DD2D4FB356001AE4D5 = {
 						CreatedOnToolsVersion = 16.2;
-						TestTargetID = C19CAA602D3BDEA100CFBE85;
+						TestTargetID = C108B2CD2D4FB353001AE4D5;
 					};
-					C19CAA7A2D3BDEA300CFBE85 = {
+					C108B2E72D4FB356001AE4D5 = {
 						CreatedOnToolsVersion = 16.2;
-						TestTargetID = C19CAA602D3BDEA100CFBE85;
+						TestTargetID = C108B2CD2D4FB353001AE4D5;
 					};
 				};
 			};
-			buildConfigurationList = C19CAA5C2D3BDEA100CFBE85 /* Build configuration list for PBXProject "GymCal" */;
+			buildConfigurationList = C108B2C92D4FB353001AE4D5 /* Build configuration list for PBXProject "GymCalc" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = C19CAA582D3BDEA100CFBE85;
+			mainGroup = C108B2C52D4FB353001AE4D5;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = C19CAA622D3BDEA200CFBE85 /* Products */;
+			productRefGroup = C108B2CF2D4FB354001AE4D5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C19CAA602D3BDEA100CFBE85 /* GymCalc */,
-				C19CAA702D3BDEA300CFBE85 /* GymCalcTests */,
-				C19CAA7A2D3BDEA300CFBE85 /* GymCalcUITests */,
+				C108B2CD2D4FB353001AE4D5 /* GymCalc */,
+				C108B2DD2D4FB356001AE4D5 /* GymCalcTests */,
+				C108B2E72D4FB356001AE4D5 /* GymCalcUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		C19CAA5F2D3BDEA100CFBE85 /* Resources */ = {
+		C108B2CC2D4FB353001AE4D5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA6F2D3BDEA300CFBE85 /* Resources */ = {
+		C108B2DC2D4FB356001AE4D5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA792D3BDEA300CFBE85 /* Resources */ = {
+		C108B2E62D4FB356001AE4D5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -232,21 +232,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		C19CAA5D2D3BDEA100CFBE85 /* Sources */ = {
+		C108B2CA2D4FB353001AE4D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA6D2D3BDEA300CFBE85 /* Sources */ = {
+		C108B2DA2D4FB356001AE4D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C19CAA772D3BDEA300CFBE85 /* Sources */ = {
+		C108B2E42D4FB356001AE4D5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -256,20 +256,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		C19CAA732D3BDEA300CFBE85 /* PBXTargetDependency */ = {
+		C108B2E02D4FB356001AE4D5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C19CAA602D3BDEA100CFBE85 /* GymCalc */;
-			targetProxy = C19CAA722D3BDEA300CFBE85 /* PBXContainerItemProxy */;
+			target = C108B2CD2D4FB353001AE4D5 /* GymCalc */;
+			targetProxy = C108B2DF2D4FB356001AE4D5 /* PBXContainerItemProxy */;
 		};
-		C19CAA7D2D3BDEA300CFBE85 /* PBXTargetDependency */ = {
+		C108B2EA2D4FB356001AE4D5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = C19CAA602D3BDEA100CFBE85 /* GymCalc */;
-			targetProxy = C19CAA7C2D3BDEA300CFBE85 /* PBXContainerItemProxy */;
+			target = C108B2CD2D4FB353001AE4D5 /* GymCalc */;
+			targetProxy = C108B2E92D4FB356001AE4D5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		C19CAA832D3BDEA300CFBE85 /* Debug */ = {
+		C108B2F02D4FB356001AE4D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -321,7 +321,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -329,12 +329,10 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		C19CAA842D3BDEA300CFBE85 /* Release */ = {
+		C108B2F12D4FB356001AE4D5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -380,7 +378,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -390,21 +388,17 @@
 			};
 			name = Release;
 		};
-		C19CAA862D3BDEA300CFBE85 /* Debug */ = {
+		C108B2F32D4FB356001AE4D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"GymCal/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"GymCalc/Preview Content\"";
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = GymCalc;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -417,28 +411,23 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalc;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		C19CAA872D3BDEA300CFBE85 /* Release */ = {
+		C108B2F42D4FB356001AE4D5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"GymCal/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"GymCalc/Preview Content\"";
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = GymCalc;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -457,7 +446,7 @@
 			};
 			name = Release;
 		};
-		C19CAA892D3BDEA300CFBE85 /* Debug */ = {
+		C108B2F62D4FB356001AE4D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -465,18 +454,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalcTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymCal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymCal";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymCalc.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymCalc";
 			};
 			name = Debug;
 		};
-		C19CAA8A2D3BDEA300CFBE85 /* Release */ = {
+		C108B2F72D4FB356001AE4D5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -484,18 +473,18 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalcTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymCal.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymCal";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GymCalc.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/GymCalc";
 			};
 			name = Release;
 		};
-		C19CAA8C2D3BDEA300CFBE85 /* Debug */ = {
+		C108B2F92D4FB356001AE4D5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -503,16 +492,16 @@
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalcUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = GymCal;
+				TEST_TARGET_NAME = GymCalc;
 			};
 			name = Debug;
 		};
-		C19CAA8D2D3BDEA300CFBE85 /* Release */ = {
+		C108B2FA2D4FB356001AE4D5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -520,55 +509,55 @@
 				DEVELOPMENT_TEAM = 6TR383VL77;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrewslifkin.GymCalcUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = GymCal;
+				TEST_TARGET_NAME = GymCalc;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C19CAA5C2D3BDEA100CFBE85 /* Build configuration list for PBXProject "GymCal" */ = {
+		C108B2C92D4FB353001AE4D5 /* Build configuration list for PBXProject "GymCalc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C19CAA832D3BDEA300CFBE85 /* Debug */,
-				C19CAA842D3BDEA300CFBE85 /* Release */,
+				C108B2F02D4FB356001AE4D5 /* Debug */,
+				C108B2F12D4FB356001AE4D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C19CAA852D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalc" */ = {
+		C108B2F22D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalc" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C19CAA862D3BDEA300CFBE85 /* Debug */,
-				C19CAA872D3BDEA300CFBE85 /* Release */,
+				C108B2F32D4FB356001AE4D5 /* Debug */,
+				C108B2F42D4FB356001AE4D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C19CAA882D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalcTests" */ = {
+		C108B2F52D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalcTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C19CAA892D3BDEA300CFBE85 /* Debug */,
-				C19CAA8A2D3BDEA300CFBE85 /* Release */,
+				C108B2F62D4FB356001AE4D5 /* Debug */,
+				C108B2F72D4FB356001AE4D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C19CAA8B2D3BDEA300CFBE85 /* Build configuration list for PBXNativeTarget "GymCalcUITests" */ = {
+		C108B2F82D4FB356001AE4D5 /* Build configuration list for PBXNativeTarget "GymCalcUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C19CAA8C2D3BDEA300CFBE85 /* Debug */,
-				C19CAA8D2D3BDEA300CFBE85 /* Release */,
+				C108B2F92D4FB356001AE4D5 /* Debug */,
+				C108B2FA2D4FB356001AE4D5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = C19CAA592D3BDEA100CFBE85 /* Project object */;
+	rootObject = C108B2C62D4FB353001AE4D5 /* Project object */;
 }
