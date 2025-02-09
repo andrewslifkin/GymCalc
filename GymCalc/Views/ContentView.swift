@@ -167,15 +167,10 @@ struct BarbellPresetCarousel: View {
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(Barbell.presets + calculator.customBarbells, id: \.id) { barbell in
+                        ForEach(calculator.availableBarbells.filter { $0.isVisible }) { barbell in
                             Button {
                                 withAnimation {
-                                    // Set the barbell and use its weight as starting point
                                     calculator.selectedBarbell = barbell
-                                    if calculator.considerBarbellWeight {
-                                        calculator.targetWeight = barbell.weight.convert(to: calculator.selectedUnit).value + 20 // Add 20 lbs/kg as starting weight
-                                    }
-                                    HapticManager.shared.mediumImpact()
                                 }
                             } label: {
                                 Text(barbell.name)
@@ -200,7 +195,6 @@ struct BarbellPresetCarousel: View {
                                     )
                                     .opacity(calculator.considerBarbellWeight ? 1.0 : 0.5)
                             }
-                            .disabled(!calculator.considerBarbellWeight)
                         }
                     }
                     .padding(.horizontal)

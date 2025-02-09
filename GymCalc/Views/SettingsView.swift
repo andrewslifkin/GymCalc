@@ -138,7 +138,7 @@ struct SettingsView: View {
                 }
                 
                 Section("Equipment Weight") {
-                    ForEach($availableBarbells) { $barbell in
+                    ForEach(calculator.availableBarbells) { barbell in
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(barbell.name)
@@ -150,6 +150,16 @@ struct SettingsView: View {
                             }
                             
                             Spacer()
+                            
+                            Toggle("", isOn: Binding(
+                                get: { barbell.isVisible },
+                                set: { newValue in
+                                    withAnimation {
+                                        calculator.updateBarbellVisibility(for: barbell.id, isVisible: newValue)
+                                    }
+                                }
+                            ))
+                            .labelsHidden()
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
