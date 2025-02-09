@@ -3,48 +3,23 @@ import Foundation
 
 struct SettingsView: View {
     @EnvironmentObject private var calculator: Calculator
-    @State private var availablePlates: [PlateSettingsItem]
     @State private var showingAddPlateSheet = false
     @State private var newPlateWeight: String = ""
     @State private var availableBarbells: [Barbell] = []
     @State private var showingAddBarbellSheet = false
     @State private var selectedBarbellToEdit: Barbell?
-    
-    init() {
-        let calculator = Calculator()
-        self._availablePlates = State(initialValue: 
-            [2.5, 5, 10, 15, 20, 25, 35, 45].map { 
-                PlateSettingsItem(weight: $0) 
-            }
-        )
-        
-        self._availableBarbells = State(initialValue: calculator.availableBarbells)
-    }
-    
-    private func updateSelectedPlates() {
-        let enabledPlateWeights = availablePlates
-            .filter { $0.isEnabled }
-            .map { $0.weight }
-        
-        calculator.updateSelectedPlateWeights(enabledPlateWeights)
-    }
-    
+
     private func addCustomPlate() {
         guard 
             let weight = Double(newPlateWeight),
-            weight > 0,
-            weight <= 100,  // Reasonable plate weight limit
-            !availablePlates.contains(where: { $0.weight == weight })
+            weight > 45,  // Ensure it's a custom plate
+            weight <= 100  // Reasonable plate weight limit
         else {
             return
         }
         
-        // Use a single mutation to update state
         withAnimation {
-            let newPlate = PlateSettingsItem(weight: weight, isEnabled: true, isCustom: true)
-            availablePlates.append(newPlate)
-            calculator.addAvailablePlateWeight(weight)
-            updateSelectedPlates()
+            calculator.addCustomPlateWeight(weight)
         }
         
         // Reset and dismiss sheet
@@ -53,81 +28,55 @@ struct SettingsView: View {
     }
     
     private func deletePlates(at offsets: IndexSet) {
-        // Create a new IndexSet with only custom plate indices
-        let customPlateIndices = IndexSet(offsets.compactMap { 
-            availablePlates[$0].isCustom ? $0 : nil 
-        })
-        
-        // Remove custom plates
-        let platesToRemove = customPlateIndices.map { availablePlates[$0].weight }
+        // Filter and remove only custom plates (weight > 45)
+        let platesToRemove = offsets.compactMap { index -> Double? in
+            let plateWeight = calculator.availablePlateWeights[index]
+            return plateWeight > 45 ? plateWeight : nil
+        }
         
         withAnimation {
-            availablePlates.remove(atOffsets: customPlateIndices)
-            
             for plateWeight in platesToRemove {
-                calculator.removeAvailablePlateWeight(plateWeight)
+                calculator.removeCustomPlateWeight(plateWeight)
             }
-            
-            updateSelectedPlates()
         }
     }
     
-    // New barbell management methods
     private func removeBarbell(_ barbell: Barbell) {
         calculator.removeAvailableBarbell(barbell)
-        availableBarbells.removeAll { $0.id == barbell.id }
-        
-        // Persist changes
-        Task {
-            if let encoded = try? JSONEncoder().encode(availableBarbells) {
-                UserDefaults.standard.set(encoded, forKey: Calculator.availableBarbellsKey)
-            }
-        }
-    }
-    
-    private func startEditingBarbell(_ barbell: Barbell) {
-        selectedBarbellToEdit = barbell
-        showingAddBarbellSheet = true
     }
     
     private func saveBarbell(_ editedBarbell: Barbell) {
-        // Remove the old barbell if it exists
-        if let index = availableBarbells.firstIndex(where: { $0.id == editedBarbell.id }) {
-            availableBarbells.remove(at: index)
+        // If barbell exists, update it
+        if let index = calculator.availableBarbells.firstIndex(where: { $0.id == editedBarbell.id }) {
+            calculator.availableBarbells[index] = editedBarbell
+        } else {
+            // Add new barbell
+            calculator.availableBarbells.append(editedBarbell)
         }
         
-        // Add the new or edited barbell
-        availableBarbells.append(editedBarbell)
-        
-        // Update calculator's available barbells
-        calculator.availableBarbells = availableBarbells
-        
-        // Persist changes
-        Task {
-            if let encoded = try? JSONEncoder().encode(availableBarbells) {
-                UserDefaults.standard.set(encoded, forKey: Calculator.availableBarbellsKey)
-            }
-        }
+        // Reset edit state
+        selectedBarbellToEdit = nil
+        showingAddBarbellSheet = false
     }
     
     var body: some View {
         NavigationView {
             List {
                 Section("Available Plates") {
-                    ForEach($availablePlates) { $plateItem in
+                    ForEach(calculator.availablePlateWeights, id: \.self) { plateWeight in
                         HStack(spacing: 12) {
-                            Text("\(plateItem.weight, specifier: "%.1f")kg")
+                            Text("\(plateWeight, specifier: "%.1f")kg")
                                 .font(.headline)
-                                .foregroundColor(plateItem.isCustom ? .blue : .primary)
+                                .foregroundColor(plateWeight > 45 ? .blue : .primary)
                             
                             Spacer()
                             
-                            // Enable/disable toggle
                             Toggle("", isOn: Binding(
-                                get: { plateItem.isEnabled },
+                                get: { calculator.selectedPlateWeights.contains(plateWeight) },
                                 set: { newValue in
-                                    plateItem.isEnabled = newValue
-                                    updateSelectedPlates()
+                                    withAnimation {
+                                        calculator.updatePlateVisibility(for: plateWeight, isEnabled: newValue)
+                                    }
                                 }
                             ))
                             .labelsHidden()
@@ -137,7 +86,7 @@ struct SettingsView: View {
                     .onDelete(perform: deletePlates)
                 }
                 
-                Section("Equipment Weight") {
+                Section("Barbells") {
                     ForEach(calculator.availableBarbells) { barbell in
                         HStack {
                             VStack(alignment: .leading) {
@@ -169,7 +118,8 @@ struct SettingsView: View {
                             }
                             
                             Button {
-                                startEditingBarbell(barbell)
+                                selectedBarbellToEdit = barbell
+                                showingAddBarbellSheet = true
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
@@ -179,6 +129,26 @@ struct SettingsView: View {
                 }
                 
                 Section {
+                    Button(action: { 
+                        showingAddPlateSheet = true 
+                    }) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Add Custom Plate")
+                        }
+                        .foregroundColor(.blue)
+                    }
+                    
+                    Button(action: {
+                        calculator.resetPlates()
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Reset Plates to Default")
+                        }
+                        .foregroundColor(.blue)
+                    }
+                    
                     Button(action: { 
                         selectedBarbellToEdit = nil
                         showingAddBarbellSheet = true 
@@ -191,68 +161,48 @@ struct SettingsView: View {
                     }
                     
                     Button(action: { 
-                        showingAddPlateSheet = true 
+                        selectedBarbellToEdit = nil
+                        showingAddBarbellSheet = true 
                     }) {
                         HStack {
                             Image(systemName: "plus")
-                            Text("Add Custom Plate")
+                            Text("Add Custom Barbell")
                         }
                         .foregroundColor(.blue)
-                    }
-                    
-                    Button(action: {
-                        calculator.resetAvailablePlateWeights()
-                        availablePlates = [2.5, 5, 10, 15, 20, 25, 35, 45].map { 
-                            PlateSettingsItem(weight: $0) 
-                        }
-                        updateSelectedPlates()
-                    }) {
-                        HStack {
-                            Image(systemName: "arrow.counterclockwise")
-                            Text("Reset Plates to Default")
-                        }
-                        .foregroundColor(.red)
                     }
                 } footer: {
                     Text("Customize your plates and equipment weights for precise calculations.")
                         .font(.footnote)
-                        .foregroundColor(.gray)
                 }
             }
             .navigationTitle("Equipment Settings")
-            .sheet(isPresented: $showingAddBarbellSheet, onDismiss: {
-                selectedBarbellToEdit = nil
-            }) {
-                AddBarbellView(
-                    existingBarbell: selectedBarbellToEdit,
-                    onSave: { newBarbell in
-                        saveBarbell(newBarbell)
-                        showingAddBarbellSheet = false
-                    },
-                    onCancel: {
-                        showingAddBarbellSheet = false
-                    }
-                )
-            }
             .sheet(isPresented: $showingAddPlateSheet) {
                 NavigationView {
                     Form {
                         TextField("Plate Weight (kg)", text: $newPlateWeight)
                             .keyboardType(.decimalPad)
-                    }
-                    .navigationTitle("Add Custom Plate")
-                    .navigationBarItems(
-                        leading: Button("Cancel") {
-                            showingAddPlateSheet = false
-                            newPlateWeight = ""
-                        },
-                        trailing: Button("Add") {
+                        
+                        Button("Add Plate") {
                             addCustomPlate()
                         }
-                        .disabled(newPlateWeight.isEmpty || Double(newPlateWeight) == nil)
-                    )
+                    }
+                    .navigationTitle("Add Custom Plate")
+                    .navigationBarItems(trailing: Button("Cancel") {
+                        showingAddPlateSheet = false
+                    })
                 }
-                .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $showingAddBarbellSheet) {
+                AddBarbellView(
+                    existingBarbell: selectedBarbellToEdit,
+                    onSave: { newBarbell in
+                        saveBarbell(newBarbell)
+                    },
+                    onCancel: {
+                        showingAddBarbellSheet = false
+                        selectedBarbellToEdit = nil
+                    }
+                )
             }
         }
     }

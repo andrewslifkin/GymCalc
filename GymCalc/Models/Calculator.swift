@@ -165,7 +165,10 @@ final class Calculator: ObservableObject {
 
     // Modify initialization to handle visibility more robustly
     init() {
-        // Try to load from UserDefaults first
+        // Default plate weights
+        let defaultPlates: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
+        
+        // Try to load barbells from UserDefaults first
         if let data = UserDefaults.standard.data(forKey: Self.availableBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
             _availableBarbells = decoded
@@ -183,26 +186,67 @@ final class Calculator: ObservableObject {
             _availableBarbells[0].isVisible = true
         }
         
-        // Rest of the initialization remains the same
+        // Load custom barbells
         if let data = UserDefaults.standard.data(forKey: Self.customBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
             self.customBarbells = decoded
         }
         
+        // Load plate weights with fallback to default
         if let data = UserDefaults.standard.data(forKey: Self.availablePlatesKey),
-           let decoded = try? JSONDecoder().decode([Double].self, from: data) {
+           let decoded = try? JSONDecoder().decode([Double].self, from: data),
+           !decoded.isEmpty {
             self.availablePlates = decoded
+            self.selectedPlateWeights = decoded
+        } else {
+            // Use default plates if no saved data
+            self.availablePlates = defaultPlates
+            self.selectedPlateWeights = defaultPlates
         }
         
         // Ensure selected barbell is visible
         if !selectedBarbell.isVisible {
             selectedBarbell = _availableBarbells.first(where: { $0.isVisible }) ?? .standard
         }
+        
+        // Validate and correct state
+        validateState()
+    }
+    
+    private func validateState() {
+        // Ensure at least one plate is selected
+        if selectedPlateWeights.isEmpty {
+            selectedPlateWeights = [45.0]  // Default to 45 lbs/kg
+        }
+        
+        // Ensure all selected plates are in available plates
+        selectedPlateWeights = selectedPlateWeights.filter { availablePlates.contains($0) }
     }
     
     func resetPlates() {
-        availablePlates = [2.5, 5, 10, 15, 20, 25, 35, 45]
+        let defaultPlates: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
+        
+        // Reset available and selected plate weights
+        availablePlates = defaultPlates
+        selectedPlateWeights = defaultPlates
+        
+        // Persist changes
+        Task { @MainActor in
+            do {
+                let encoder = JSONEncoder()
+                let encodedPlates = try encoder.encode(availablePlates)
+                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
+                
+                // Trigger UI update
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            } catch {
+                print("Error encoding plates: \(error)")
+            }
+        }
     }
+    
     // MARK: - Private Cache Properties
     private var cachedMax: Double?
     private var cachedBreakdown: [RepPercentage]?
@@ -391,6 +435,100 @@ final class Calculator: ObservableObject {
     func resetAvailablePlateWeights() {
         availablePlateWeights = [2.5, 5, 10, 15, 20, 25, 35, 45]
         selectedPlateWeights = availablePlateWeights
+    }
+    
+    // MARK: - Plate Visibility Management
+    func updatePlateVisibility(for plateWeight: Double, isEnabled: Bool) {
+        guard availablePlateWeights.contains(plateWeight) else {
+            return
+        }
+        
+        if isEnabled {
+            if !selectedPlateWeights.contains(plateWeight) {
+                selectedPlateWeights.append(plateWeight)
+            }
+        } else if selectedPlateWeights.count > 1 {
+            selectedPlateWeights.removeAll { $0 == plateWeight }
+        }
+        
+        // Persist changes
+        Task { @MainActor in
+            do {
+                let encoder = JSONEncoder()
+                let encodedPlates = try encoder.encode(selectedPlateWeights)
+                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
+                
+                // Ensure UI updates on main thread
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            } catch {
+                print("Error encoding plate weights: \(error)")
+            }
+        }
+    }
+    
+    func addCustomPlateWeight(_ weight: Double) {
+        // Prevent duplicate plates
+        guard !availablePlates.contains(weight) else {
+            return
+        }
+        
+        // Add custom plate
+        availablePlates.append(weight)
+        selectedPlateWeights.append(weight)
+        
+        // Sort plates in ascending order
+        availablePlates.sort()
+        selectedPlateWeights.sort()
+        
+        // Persist changes
+        Task { @MainActor in
+            do {
+                let encoder = JSONEncoder()
+                let encodedPlates = try encoder.encode(availablePlates)
+                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
+                
+                // Ensure UI updates on main thread
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            } catch {
+                print("Error encoding custom plate: \(error)")
+            }
+        }
+    }
+    
+    func removeCustomPlateWeight(_ weight: Double) {
+        // Prevent removing standard plates
+        guard weight > 45 else {
+            return
+        }
+        
+        // Remove from available and selected plates
+        availablePlates.removeAll { $0 == weight }
+        selectedPlateWeights.removeAll { $0 == weight }
+        
+        // Ensure at least one plate remains
+        if selectedPlateWeights.isEmpty {
+            selectedPlateWeights = [45.0]
+        }
+        
+        // Persist changes
+        Task { @MainActor in
+            do {
+                let encoder = JSONEncoder()
+                let encodedPlates = try encoder.encode(availablePlates)
+                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
+                
+                // Ensure UI updates on main thread
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
+            } catch {
+                print("Error encoding plate removal: \(error)")
+            }
+        }
     }
     
     // MARK: - Public Methods
