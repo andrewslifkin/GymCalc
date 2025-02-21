@@ -264,6 +264,7 @@ struct PlateWeightCarousel: View {
 struct WeightInput: View {
     @EnvironmentObject private var calculator: Calculator
     @FocusState private var focusedField: Field?
+    @State private var weightSuggestion: WeightSuggestion?
     
     private enum Field: Int {
         case weight
@@ -276,7 +277,43 @@ struct WeightInput: View {
                 formatter: WeightFormatter()
             )
             .onChange(of: calculator.targetWeight) { oldValue, newValue in
+                weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
                 HapticManager.shared.lightImpact()
+            }
+            
+            if let suggestion = weightSuggestion, !suggestion.isAchievable {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("❌ The requested weight (\(suggestion.targetWeight, specifier: "%.1f")\(suggestion.unit.symbol)) is not achievable with standard plates.")
+                        .foregroundColor(.red)
+                        .font(.subheadline)
+                    
+                    HStack(spacing: 16) {
+                        Button {
+                            calculator.targetWeight = suggestion.lowerWeight
+                        } label: {
+                            Text("🔽 \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                        
+                        Button {
+                            calculator.targetWeight = suggestion.higherWeight
+                        } label: {
+                            Text("🔼 \(suggestion.higherWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+                .padding()
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
             Slider(
