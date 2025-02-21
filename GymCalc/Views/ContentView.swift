@@ -103,6 +103,7 @@ struct PlatesView: View {
     @EnvironmentObject private var calculator: Calculator
     @State private var showAddBarbell = false
     @FocusState private var focusedField: Field?
+    @State private var weightSuggestion: WeightSuggestion?
     
     private enum Field: Int {
         case weight
@@ -115,6 +116,9 @@ struct PlatesView: View {
             
             // Weight Input
             WeightInput()
+                .onChange(of: calculator.targetWeight) { oldValue, newValue in
+                    weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
+                }
             
             // Barbell Preset Carousel
             BarbellPresetCarousel()
@@ -125,6 +129,41 @@ struct PlatesView: View {
             // Plates Display
             PlateVisualizer(plateCounts: calculator.platesPerSide, unit: calculator.selectedUnit)
                 .transition(.opacity)
+            
+            if let suggestion = weightSuggestion, !suggestion.isAchievable {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("❌ The requested weight (\(suggestion.targetWeight, specifier: "%.1f")\(suggestion.unit.symbol)) is not achievable with standard plates.")
+                        .foregroundColor(.red)
+                        .font(.subheadline)
+                    
+                    HStack(spacing: 16) {
+                        Button {
+                            calculator.targetWeight = suggestion.lowerWeight
+                        } label: {
+                            Text("🔽 \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                        
+                        Button {
+                            calculator.targetWeight = suggestion.higherWeight
+                        } label: {
+                            Text("🔼 \(suggestion.higherWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                                .font(.subheadline)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.blue.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+                .padding()
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
             
             Spacer()
         }
@@ -272,67 +311,47 @@ struct WeightInput: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            NumberField(
-                value: $calculator.targetWeight, 
-                formatter: WeightFormatter()
-            )
-            .onChange(of: calculator.targetWeight) { oldValue, newValue in
-                weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
-                HapticManager.shared.lightImpact()
-            }
-            
-            if let suggestion = weightSuggestion, !suggestion.isAchievable {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("❌ The requested weight (\(suggestion.targetWeight, specifier: "%.1f")\(suggestion.unit.symbol)) is not achievable with standard plates.")
-                        .foregroundColor(.red)
-                        .font(.subheadline)
-                    
-                    HStack(spacing: 16) {
-                        Button {
-                            calculator.targetWeight = suggestion.lowerWeight
-                        } label: {
-                            Text("🔽 \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.blue.opacity(0.1))
-                                .clipShape(Capsule())
-                        }
-                        
-                        Button {
-                            calculator.targetWeight = suggestion.higherWeight
-                        } label: {
-                            Text("🔼 \(suggestion.higherWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.blue.opacity(0.1))
-                                .clipShape(Capsule())
-                        }
+            // Weight Input with Plus/Minus Buttons
+            HStack(spacing: 20) {
+                Button {
+                    withAnimation {
+                        calculator.targetWeight = max(20, calculator.targetWeight - 2.5)
+                        HapticManager.shared.lightImpact()
                     }
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(Circle())
                 }
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                NumberField(
+                    value: $calculator.targetWeight, 
+                    formatter: WeightFormatter()
+                )
+                .frame(minWidth: 100)
+                .onChange(of: calculator.targetWeight) { oldValue, newValue in
+                    weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
+                    HapticManager.shared.lightImpact()
+                }
+                
+                Button {
+                    withAnimation {
+                        calculator.targetWeight = min(300, calculator.targetWeight + 2.5)
+                        HapticManager.shared.lightImpact()
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(Circle())
+                }
             }
-            
-            Slider(
-                value: $calculator.targetWeight,
-                in: 20...300,
-                step: 2.5
-            ) {
-                Text("Weight")
-            } minimumValueLabel: {
-                Text("20")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            } maximumValueLabel: {
-                Text("300")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            .tint(.white)
-            .animation(.easeInOut(duration: 0.1), value: calculator.targetWeight)
+            .padding(.vertical, 8)
         }
     }
 }
