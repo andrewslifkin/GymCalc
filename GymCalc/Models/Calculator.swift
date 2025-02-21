@@ -221,19 +221,26 @@ final class Calculator: ObservableObject {
         }
         
         // Update barbell visibility
-        availableBarbells[index].isVisible = isVisible
+        var updatedBarbells = availableBarbells
+        updatedBarbells[index].isVisible = isVisible
+        availableBarbells = updatedBarbells
         
         // If current selected barbell becomes invisible, select a visible one
         if !selectedBarbell.isVisible {
             selectedBarbell = availableBarbells.first(where: { $0.isVisible }) ?? .standard
         }
         
-        // Persist changes
+        // Persist changes and notify observers
         Task { @MainActor in
             do {
                 let encoder = JSONEncoder()
                 let encodedBarbells = try encoder.encode(availableBarbells)
                 UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
+                
+                // Ensure UI updates
+                DispatchQueue.main.async {
+                    self.objectWillChange.send()
+                }
             } catch {
                 print("Error encoding barbells: \(error)")
             }
@@ -664,5 +671,80 @@ final class Calculator: ObservableObject {
         selectedUnit = unit
         targetWeight = newWeight.value
         HapticManager.shared.lightImpact()
+    }
+}
+
+struct WeightSuggestion {
+    let targetWeight: Double
+    let lowerWeight: Double
+    let higherWeight: Double
+    let unit: Unit
+    let isAchievable: Bool
+}
+
+extension Calculator {
+    func checkWeightAchievability(targetWeight: Double, startingWeight: Double = 53.0) -> WeightSuggestion {
+        // For barbell, we use its weight instead of startingWeight
+        let baseWeight = considerBarbellWeight ? selectedBarbell.weight.convert(to: .kg).value : 0
+        let availablePlates = selectedPlateWeights.sorted(by: >)
+        var achievableWeights: Set<Double> = [baseWeight]
+        
+        // Try each plate combination
+        var currentPlates: [Double] = []
+        
+        func tryAddPlates(targetWeight: Double, availablePlates: [Double], currentWeight: Double, currentPlates: [Double]) {
+            achievableWeights.insert(currentWeight)
+            
+            // If we've reached or exceeded target, no need to add more
+            guard currentWeight < targetWeight else { return }
+            
+            // Try adding each available plate
+            for plate in availablePlates {
+                let newWeight = currentWeight + (plate * 2) // Add plate to both sides
+                // Only proceed if we're not exceeding target by too much
+                if newWeight <= targetWeight + 20 {
+                    var plates = currentPlates
+                    plates.append(plate)
+                    tryAddPlates(targetWeight: targetWeight, availablePlates: availablePlates, currentWeight: newWeight, currentPlates: plates)
+                }
+            }
+        }
+        
+        tryAddPlates(targetWeight: targetWeight, availablePlates: availablePlates, currentWeight: baseWeight, currentPlates: [])
+        
+        // Sort all achievable weights
+        let sortedWeights = Array(achievableWeights).sorted()
+        
+        // Check if target weight is achievable
+        if sortedWeights.contains(targetWeight) {
+            return WeightSuggestion(
+                targetWeight: targetWeight,
+                lowerWeight: targetWeight,
+                higherWeight: targetWeight,
+                unit: selectedUnit,
+                isAchievable: true
+            )
+        }
+        
+        // Find closest weights
+        var lowerWeight = baseWeight
+        var higherWeight = sortedWeights.last ?? baseWeight
+        
+        for weight in sortedWeights {
+            if weight < targetWeight {
+                lowerWeight = weight
+            } else {
+                higherWeight = weight
+                break
+            }
+        }
+        
+        return WeightSuggestion(
+            targetWeight: targetWeight,
+            lowerWeight: lowerWeight,
+            higherWeight: higherWeight,
+            unit: selectedUnit,
+            isAchievable: false
+        )
     }
 }

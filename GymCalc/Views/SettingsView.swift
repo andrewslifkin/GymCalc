@@ -116,7 +116,7 @@ struct SettingsView: View {
                             Spacer()
                             
                             Toggle("", isOn: Binding(
-                                get: { barbell.isVisible },
+                                get: { calculator.availableBarbells.first { $0.id == barbell.id }?.isVisible ?? false },
                                 set: { newValue in
                                     withAnimation {
                                         calculator.updateBarbellVisibility(for: barbell.id, isVisible: newValue)
