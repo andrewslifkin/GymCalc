@@ -64,7 +64,7 @@ struct WeightConverterView: View {
                     ScrollView(showsIndicators: false) {
                         LazyVStack(spacing: 1) {
                             ForEach(weights, id: \.self) { weight in
-                                WeightRow(
+                                WeightRowView(
                                     weight: weight,
                                     unit: selectedUnit
                                 )
@@ -87,7 +87,7 @@ struct WeightConverterView: View {
     }
 }
 
-struct WeightRow: View {
+struct WeightRowView: View {
     let weight: Double
     let unit: Unit
     
