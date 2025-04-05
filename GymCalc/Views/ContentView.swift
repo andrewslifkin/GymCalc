@@ -16,6 +16,11 @@ struct ContentView: View {
                     Label("Calculator", systemImage: "number")
                 }
             
+            WeightConverterView()
+                .tabItem {
+                    Label("Convert", systemImage: "arrow.left.arrow.right")
+                }
+            
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
@@ -140,7 +145,7 @@ struct PlatesView: View {
                         Button {
                             calculator.targetWeight = suggestion.lowerWeight
                         } label: {
-                            Text("🔽 \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                            Text("�� \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
@@ -327,14 +332,26 @@ struct WeightInput: View {
                         .clipShape(Circle())
                 }
                 
-                NumberField(
-                    value: $calculator.targetWeight, 
-                    formatter: WeightFormatter()
-                )
-                .frame(minWidth: 100)
-                .onChange(of: calculator.targetWeight) { oldValue, newValue in
-                    weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
-                    HapticManager.shared.lightImpact()
+                VStack(spacing: 4) {
+                    if calculator.selectedUnit == .kg {
+                        Text("\(Weight(value: calculator.targetWeight, unit: .kg).convert(to: .lbs).value, specifier: "%.1f") lbs")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    } else {
+                        Text("\(Weight(value: calculator.targetWeight, unit: .lbs).convert(to: .kg).value, specifier: "%.1f") kg")
+                            .font(.caption)
+                            .foregroundStyle(.gray)
+                    }
+                    
+                    NumberField(
+                        value: $calculator.targetWeight, 
+                        formatter: WeightFormatter()
+                    )
+                    .frame(minWidth: 100)
+                    .onChange(of: calculator.targetWeight) { oldValue, newValue in
+                        weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
+                        HapticManager.shared.lightImpact()
+                    }
                 }
                 
                 Button {
