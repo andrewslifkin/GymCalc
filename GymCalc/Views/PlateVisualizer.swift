@@ -1,19 +1,20 @@
 import SwiftUI
 
 struct PlateVisualizer: View {
-    let plateCounts: [Calculator.PlateCount]
+    let plateCounts: [PlateCount]
     let unit: Unit
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Separate sections for Equipment and Plates per side
-            if let equipmentPlate = plateCounts.first(where: { $0.label != nil }) {
+            // Equipment section (barbell)
+            if let barbell = plateCounts.first {
                 Text("Equipment:")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .padding(.horizontal)
                 
-                Text(equipmentPlate.formattedString)
+                Text("\(barbell.weight.value, specifier: "%.1f") \(unit.symbol)")
                     .font(.system(.body, design: .rounded))
                     .fontWeight(.medium)
                     .padding(.horizontal)
@@ -28,14 +29,14 @@ struct PlateVisualizer: View {
                 .foregroundColor(.gray)
                 .padding(.horizontal)
             
-            if plateCounts.filter({ $0.label == nil }).isEmpty {
+            if plateCounts.isEmpty {
                 Text("Add weight to see plate breakdown")
                     .font(.body)
                     .foregroundColor(.gray)
                     .padding(.horizontal)
             } else {
-                ForEach(plateCounts.filter { $0.label == nil }) { plateCount in
-                    Text(plateCount.formattedString)
+                ForEach(plateCounts.dropFirst(), id: \.self) { plateCount in
+                    Text("\(plateCount.weight.value, specifier: "%.1f") \(unit.symbol) × \(plateCount.count)")
                         .font(.system(.body, design: .rounded))
                         .fontWeight(.medium)
                         .padding(.horizontal)
@@ -46,4 +47,17 @@ struct PlateVisualizer: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Plate breakdown")
     }
+}
+
+#Preview {
+    PlateVisualizer(
+        plateCounts: [
+            PlateCount(weight: Weight(value: 20, unit: .kg), count: 1),
+            PlateCount(weight: Weight(value: 20, unit: .kg), count: 2),
+            PlateCount(weight: Weight(value: 10, unit: .kg), count: 2),
+            PlateCount(weight: Weight(value: 5, unit: .kg), count: 2)
+        ],
+        unit: .kg
+    )
+    .preferredColorScheme(.dark)
 }

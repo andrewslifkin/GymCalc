@@ -121,7 +121,7 @@ struct PlatesView: View {
             
             // Weight Input
             WeightInput()
-                .onChange(of: calculator.targetWeight) { oldValue, newValue in
+                .onChange(of: calculator.targetWeight) { _, newValue in
                     weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
                 }
             
@@ -145,7 +145,7 @@ struct PlatesView: View {
                         Button {
                             calculator.targetWeight = suggestion.lowerWeight
                         } label: {
-                            Text("�� \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
+                            Text("⬇️ \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
                                 .font(.subheadline)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
@@ -199,104 +199,31 @@ struct WhiteTintToggleStyle: ToggleStyle {
 
 struct BarbellPresetCarousel: View {
     @EnvironmentObject private var calculator: Calculator
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 12) {
-                // Barbell Weight Toggle
-                Toggle("", isOn: $calculator.considerBarbellWeight)
-                    .labelsHidden()
-                    .toggleStyle(WhiteTintToggleStyle())
-                    .padding(.leading, 8)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(calculator.availableBarbells.filter { $0.isVisible }) { barbell in
-                            Button {
-                                withAnimation {
-                                    calculator.selectedBarbell = barbell
-                                }
-                            } label: {
-                                Text(barbell.name)
-                                    .font(.system(.body, design: .rounded))
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(
-                                        calculator.selectedBarbell.id == barbell.id && calculator.considerBarbellWeight 
-                                        ? .white 
-                                        : .gray
-                                    )
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 16)
-                                    .background(
-                                        calculator.selectedBarbell.id == barbell.id && calculator.considerBarbellWeight
-                                        ? Color.white.opacity(0.1) 
-                                        : Color.clear
-                                    )
-                                    .clipShape(Capsule())
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                    )
-                                    .opacity(calculator.considerBarbellWeight ? 1.0 : 0.5)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
-            
-            // Plate Weight Carousel
-            PlateWeightCarousel()
-        }
-    }
-}
-
-struct PlateWeightCarousel: View {
-    @EnvironmentObject private var calculator: Calculator
-    
-    private func isPlateSelected(_ plateWeight: Double) -> Bool {
-        calculator.selectedPlateWeights.contains(plateWeight)
-    }
-    
-    private func plateTextColor(_ plateWeight: Double) -> Color {
-        isPlateSelected(plateWeight) ? .white : .gray
-    }
-    
-    private func plateBackground(_ plateWeight: Double) -> Color {
-        isPlateSelected(plateWeight) ? Color.white.opacity(0.1) : .clear
-    }
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(calculator.availablePlateWeights, id: \.self) { plateWeight in
+                ForEach(calculator.availableBarbells.filter(\.isVisible)) { barbell in
                     Button {
                         withAnimation {
-                            // Toggle plate selection and invalidate cache
-                            if calculator.selectedPlateWeights.contains(plateWeight) {
-                                calculator.selectedPlateWeights.removeAll { $0 == plateWeight }
-                            } else {
-                                calculator.selectedPlateWeights.append(plateWeight)
-                            }
-                            
-                            // Invalidate cache to force recalculation
-                            calculator.cachedPlates = nil
-                            
+                            calculator.selectedBarbell = barbell
                             HapticManager.shared.lightImpact()
                         }
                     } label: {
-                        Text("\(plateWeight, specifier: "%.1f")")
-                            .font(.system(.body, design: .rounded))
-                            .fontWeight(.medium)
-                            .foregroundStyle(plateTextColor(plateWeight))
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 16)
-                            .background(plateBackground(plateWeight))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(barbell.name)
+                                .font(.headline)
+                                .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .white : .gray)
+                            
+                            Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .background(calculator.selectedBarbell.id == barbell.id ? Color.white.opacity(0.1) : Color.clear)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
             }
@@ -307,69 +234,43 @@ struct PlateWeightCarousel: View {
 
 struct WeightInput: View {
     @EnvironmentObject private var calculator: Calculator
-    @FocusState private var focusedField: Field?
-    @State private var weightSuggestion: WeightSuggestion?
-    
-    private enum Field: Int {
-        case weight
-    }
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Weight Input with Plus/Minus Buttons
-            HStack(spacing: 20) {
-                Button {
-                    withAnimation {
-                        calculator.targetWeight = max(20, calculator.targetWeight - 2.5)
-                        HapticManager.shared.lightImpact()
-                    }
-                } label: {
-                    Image(systemName: "minus")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                        .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(Circle())
+        HStack(spacing: 20) {
+            Button {
+                withAnimation {
+                    calculator.targetWeight = max(0, calculator.targetWeight - 2.5)
                 }
-                
-                VStack(spacing: 4) {
-                    if calculator.selectedUnit == .kg {
-                        Text("\(Weight(value: calculator.targetWeight, unit: .kg).convert(to: .lbs).value, specifier: "%.1f") lbs")
-                            .font(.caption)
-                            .foregroundStyle(.gray)
-                    } else {
-                        Text("\(Weight(value: calculator.targetWeight, unit: .lbs).convert(to: .kg).value, specifier: "%.1f") kg")
-                            .font(.caption)
-                            .foregroundStyle(.gray)
-                    }
-                    
-                    NumberField(
-                        value: $calculator.targetWeight, 
-                        formatter: WeightFormatter()
-                    )
-                    .frame(minWidth: 100)
-                    .onChange(of: calculator.targetWeight) { oldValue, newValue in
-                        weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
-                        HapticManager.shared.lightImpact()
-                    }
-                }
-                
-                Button {
-                    withAnimation {
-                        calculator.targetWeight = min(300, calculator.targetWeight + 2.5)
-                        HapticManager.shared.lightImpact()
-                    }
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                        .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(Circle())
-                }
+            } label: {
+                Image(systemName: "minus")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.1))
+                    .clipShape(Circle())
             }
-            .padding(.vertical, 8)
+            
+            TextField("Weight", value: $calculator.targetWeight, formatter: NumberFormatter())
+                .frame(minWidth: 100)
+                .font(.system(.title, design: .rounded))
+                .multilineTextAlignment(.center)
+                .textFieldStyle(.roundedBorder)
+            
+            Button {
+                withAnimation {
+                    calculator.targetWeight = min(1000, calculator.targetWeight + 2.5)
+                }
+            } label: {
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Color.white.opacity(0.1))
+                    .clipShape(Circle())
+            }
         }
+        .padding(.vertical, 8)
     }
 }
 

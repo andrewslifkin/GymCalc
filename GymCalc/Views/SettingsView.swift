@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var availableBarbells: [Barbell] = []
     @State private var showingAddBarbellSheet = false
     @State private var selectedBarbellToEdit: Barbell?
+    @Environment(\.colorScheme) private var colorScheme
 
     private func addCustomPlate() {
         guard let weight = Double(newPlateWeight) else {
@@ -72,7 +73,7 @@ struct SettingsView: View {
                         HStack(spacing: 12) {
                             Text("\(plateWeight, specifier: "%.1f")kg")
                                 .font(.headline)
-                                .foregroundColor(plateWeight > 45 ? .blue : .primary)
+                                .foregroundColor(plateWeight > 45 ? .blue : (colorScheme == .dark ? .white : .primary))
                             
                             Spacer()
                             
@@ -85,6 +86,7 @@ struct SettingsView: View {
                                 }
                             ))
                             .labelsHidden()
+                            .toggleStyle(WhiteTintToggleStyle())
                         }
                         .padding(.vertical, 4)
                     }
@@ -107,7 +109,7 @@ struct SettingsView: View {
                             VStack(alignment: .leading) {
                                 Text(barbell.name)
                                     .font(.headline)
-                                    .foregroundColor(barbell.isCustom ? .blue : .primary)
+                                    .foregroundColor(barbell.isCustom ? .blue : (colorScheme == .dark ? .white : .primary))
                                 Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
@@ -124,6 +126,7 @@ struct SettingsView: View {
                                 }
                             ))
                             .labelsHidden()
+                            .toggleStyle(WhiteTintToggleStyle())
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
@@ -181,9 +184,13 @@ struct SettingsView: View {
                         }
                     }
                     .navigationTitle("Add Custom Plate")
-                    .navigationBarItems(trailing: Button("Cancel") {
-                        showingAddPlateSheet = false
-                    })
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                showingAddPlateSheet = false
+                            }
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $showingAddBarbellSheet) {

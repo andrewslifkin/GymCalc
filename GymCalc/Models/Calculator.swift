@@ -1,11 +1,12 @@
 import Foundation
+import SwiftUI
 
 enum CalculatorMode: String, CaseIterable {
     case plates = "Plates"
     case maxRep = "1RM"
 }
 
-struct Barbell: Identifiable, Codable, Equatable {
+struct Barbell: Identifiable, Codable, Hashable {
     var id: UUID
     let name: String
     let weight: Weight
@@ -20,34 +21,35 @@ struct Barbell: Identifiable, Codable, Equatable {
         self.isVisible = isVisible
     }
     
-    static func == (lhs: Barbell, rhs: Barbell) -> Bool {
-        lhs.id == rhs.id
-    }
-    
     static let standard = Barbell(
         name: "Olympic/Men's 20kg",
-        weight: Weight(value: 20, unit: .kg) // 45 lbs
+        weight: Weight.kg(20) // 45 lbs
     )
     
     static let presets: [Barbell] = [
         // Olympic Bars
-        Barbell(name: "Olympic Bar (Men's)", weight: Weight(value: 20, unit: .kg)),
-        Barbell(name: "Olympic Bar (Women's)", weight: Weight(value: 15, unit: .kg)),
+        Barbell(name: "Olympic Bar (Men's)", weight: Weight.kg(20)),
+        Barbell(name: "Olympic Bar (Women's)", weight: Weight.kg(15)),
         
         // Specialty Bars
-        Barbell(name: "EZ Curl Bar", weight: Weight(value: 10, unit: .kg)),
-        Barbell(name: "Trap Bar", weight: Weight(value: 25, unit: .kg)),
-        Barbell(name: "Safety Squat Bar", weight: Weight(value: 25, unit: .kg)),
+        Barbell(name: "EZ Curl Bar", weight: Weight.kg(10)),
+        Barbell(name: "Trap Bar", weight: Weight.kg(25)),
+        Barbell(name: "Safety Squat Bar", weight: Weight.kg(25)),
         
         // Fixed Barbells
-        Barbell(name: "Fixed Barbell (10kg)", weight: Weight(value: 10, unit: .kg)),
-        Barbell(name: "Fixed Barbell (15kg)", weight: Weight(value: 15, unit: .kg)),
-        Barbell(name: "Fixed Barbell (20kg)", weight: Weight(value: 20, unit: .kg)),
+        Barbell(name: "Fixed Barbell (10kg)", weight: Weight.kg(10)),
+        Barbell(name: "Fixed Barbell (15kg)", weight: Weight.kg(15)),
+        Barbell(name: "Fixed Barbell (20kg)", weight: Weight.kg(20)),
         
         // Specialty Equipment
-        Barbell(name: "Swiss Bar", weight: Weight(value: 20, unit: .kg)),
-        Barbell(name: "Cambered Bar", weight: Weight(value: 25, unit: .kg))
+        Barbell(name: "Swiss Bar", weight: Weight.kg(20)),
+        Barbell(name: "Cambered Bar", weight: Weight.kg(25))
     ]
+}
+
+struct PlateCount: Hashable {
+    let weight: Weight
+    let count: Int
 }
 
 @MainActor
@@ -440,36 +442,14 @@ final class Calculator: ObservableObject {
     }
     
     // MARK: - Computed Properties
-    struct PlateCount: Identifiable, Hashable {
+    struct RepPercentage: Identifiable {
         let id = UUID()
+        let percentage: Int
         let weight: Double
-        let count: Int
-        let label: String?  // Optional label for equipment
-        let unit: Unit      // Add unit to support different weight units
+        let reps: Int
         
-        // Convenience initializer for plates
-        init(weight: Double, count: Int, unit: Unit = .kg) {
-            self.weight = weight
-            self.count = count
-            self.label = nil
-            self.unit = unit
-        }
-        
-        // Initializer for equipment with label
-        init(weight: Double, count: Int, label: String, unit: Unit = .kg) {
-            self.weight = weight
-            self.count = count
-            self.label = label
-            self.unit = unit
-        }
-        
-        // Formatted string representation
-        var formattedString: String {
-            if let label = label {
-                return "\(label): \(String(format: "%.1f", weight)) \(unit.symbol)"
-            } else {
-                return "\(String(format: "%.1f", weight)) \(unit.symbol) x \(count)"
-            }
+        var displayWeight: String {
+            String(format: "%.1f", weight.rounded(to: 1))
         }
     }
     
@@ -514,19 +494,14 @@ final class Calculator: ObservableObject {
         // Convert PlateCount objects back to the selected unit
         var result = plateCounts.map { plateWeight, count in
             let weightInSelectedUnit = Weight(value: plateWeight, unit: .kg).convert(to: selectedUnit).value
-            return PlateCount(weight: weightInSelectedUnit, count: count, unit: selectedUnit)
+            return PlateCount(weight: Weight(value: weightInSelectedUnit, unit: selectedUnit), count: count)
         }
         
         // Add barbell if needed
         if considerBarbellWeight {
             let barbellWeightInSelectedUnit = selectedBarbell.weight.convert(to: selectedUnit).value
             result.insert(
-                PlateCount(
-                    weight: barbellWeightInSelectedUnit,
-                    count: 1,
-                    label: selectedBarbell.name,
-                    unit: selectedUnit
-                ),
+                PlateCount(weight: Weight(value: barbellWeightInSelectedUnit, unit: selectedUnit), count: 1),
                 at: 0
             )
         }
@@ -534,17 +509,6 @@ final class Calculator: ObservableObject {
         // Cache the result
         cachedPlates = result
         return result
-    }
-    
-    struct RepPercentage: Identifiable {
-        let id = UUID()
-        let percentage: Int
-        let weight: Double
-        let reps: Int
-        
-        var displayWeight: String {
-            String(format: "%.1f", weight.rounded(to: 1))
-        }
     }
     
     var estimatedMax: Double {
@@ -838,5 +802,12 @@ extension Calculator {
             unit: selectedUnit,
             isAchievable: false
         )
+    }
+}
+
+extension Duration {
+    var seconds: Double {
+        let components = components
+        return Double(components.seconds) + Double(components.attoseconds) / 1e18
     }
 }

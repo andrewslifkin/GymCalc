@@ -38,10 +38,11 @@ struct WeightConverterView: View {
                             .clipShape(Circle())
                     }
                     
-                    TextField("", value: $inputWeight, formatter: NumberFormatter())
+                    TextField("Weight", value: $inputWeight, formatter: NumberFormatter())
                         .frame(minWidth: 100)
                         .font(.system(.title, design: .rounded))
                         .multilineTextAlignment(.center)
+                        .textFieldStyle(.roundedBorder)
                     
                     Button {
                         withAnimation {
@@ -71,7 +72,7 @@ struct WeightConverterView: View {
                                 .background(weight == inputWeight ? Color.blue.opacity(0.2) : Color.clear)
                             }
                         }
-                        .onChange(of: inputWeight) { oldValue, newValue in
+                        .onChange(of: inputWeight) { _, newValue in
                             withAnimation {
                                 proxy.scrollTo(newValue, anchor: .center)
                             }
@@ -106,43 +107,6 @@ struct WeightRow: View {
         .font(.system(.body, design: .rounded))
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-    }
-}
-
-// Required Types
-enum Unit: String, CaseIterable, Codable, Hashable {
-    case kg, lbs
-    
-    var symbol: String {
-        rawValue.uppercased()
-    }
-    
-    var conversionFactor: Double {
-        switch self {
-        case .kg: return 1.0
-        case .lbs: return 2.20462
-        }
-    }
-}
-
-struct Weight: Codable, Hashable {
-    var value: Double
-    var unit: Unit
-    
-    func convert(to targetUnit: Unit) -> Weight {
-        guard unit != targetUnit else { return self }
-        
-        let kgValue = unit == .kg ? value : value / Unit.lbs.conversionFactor
-        let convertedValue = targetUnit == .kg ? kgValue : kgValue * Unit.lbs.conversionFactor
-        
-        return Weight(value: convertedValue.rounded(to: 2), unit: targetUnit)
-    }
-}
-
-extension Double {
-    func rounded(to places: Int) -> Double {
-        let multiplier = pow(10.0, Double(places))
-        return (self * multiplier).rounded() / multiplier
     }
 }
 

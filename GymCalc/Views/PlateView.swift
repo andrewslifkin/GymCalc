@@ -3,6 +3,7 @@ import SwiftUI
 struct PlateView: View {
     let plateWeight: Double
     let unit: Unit
+    @Environment(\.colorScheme) private var colorScheme
     
     private func plateColor(_ weight: Double) -> Color {
         switch weight {
@@ -30,7 +31,7 @@ struct PlateView: View {
             
             Text("× 1")
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(colorScheme == .dark ? .gray : .secondary)
         }
     }
 }

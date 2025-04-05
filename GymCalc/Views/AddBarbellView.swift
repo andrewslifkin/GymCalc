@@ -22,7 +22,7 @@ struct AddBarbellView: View {
         self.onCancel = onCancel
         
         // Initialize state from existing barbell or with default values
-        let initialBarbell = existingBarbell ?? Barbell(name: "", weight: Weight(value: 20, unit: .kg), isCustom: true)
+        let initialBarbell = existingBarbell ?? Barbell(name: "", weight: Weight.kg(20), isCustom: true)
         
         _name = State(initialValue: initialBarbell.name)
         _weight = State(initialValue: String(format: "%.1f", initialBarbell.weight.value))
@@ -74,37 +74,39 @@ struct AddBarbellView: View {
                 }
             }
             .navigationTitle(existingBarbell == nil ? "Add Barbell" : "Edit Barbell")
-            .navigationBarItems(
-                leading: Button("Cancel") {
-                    onCancel()
-                },
-                trailing: Button("Save") {
-                    guard isValidInput else { return }
-                    
-                    let newBarbell = Barbell(
-                        id: existingBarbell?.id ?? UUID(),
-                        name: name,
-                        weight: Weight(value: Double(weight) ?? 0, unit: weightUnit),
-                        isCustom: true
-                    )
-                    
-                    onSave(newBarbell)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel", action: onCancel)
                 }
-            )
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        guard isValidInput else { return }
+                        
+                        let newBarbell = Barbell(
+                            id: existingBarbell?.id ?? UUID(),
+                            name: name,
+                            weight: weightUnit == .kg ? Weight.kg(Double(weight) ?? 0) : Weight.lbs(Double(weight) ?? 0),
+                            isCustom: true
+                        )
+                        
+                        onSave(newBarbell)
+                    }
+                }
+            }
         }
     }
 }
 
 #Preview {
     AddBarbellView(
-        existingBarbell: Barbell(name: "Barbell", weight: Weight(value: 20, unit: .kg), isCustom: true),
+        existingBarbell: Barbell(name: "Barbell", weight: Weight.kg(20), isCustom: true),
         onSave: { _ in },
         onCancel: {}
     )
 }
 
 #Preview("Editing Equipment Weight") {
-    let sampleBarbell = Barbell(name: "Olympic Bar", weight: Weight(value: 20, unit: .kg), isCustom: true)
+    let sampleBarbell = Barbell(name: "Olympic Bar", weight: Weight.kg(20), isCustom: true)
     
     return AddBarbellView(
         existingBarbell: sampleBarbell,

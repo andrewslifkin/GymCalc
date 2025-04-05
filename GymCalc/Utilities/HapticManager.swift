@@ -4,64 +4,35 @@ import UIKit
 final class HapticManager {
     static let shared = HapticManager()
     
-    private var impactGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [:]
-    private let selectionGenerator = UISelectionFeedbackGenerator()
-    private let notificationGenerator = UINotificationFeedbackGenerator()
-    
-    private init() {
-        // Pre-initialize generators
-        let styles: [UIImpactFeedbackGenerator.FeedbackStyle] = [.light, .medium, .heavy, .soft, .rigid]
-        styles.forEach { style in
-            impactGenerators[style] = UIImpactFeedbackGenerator(style: style)
-        }
-        
-        // Prepare generators
-        impactGenerators.values.forEach { $0.prepare() }
-        selectionGenerator.prepare()
-        notificationGenerator.prepare()
-    }
-    
-    func impact(style: UIImpactFeedbackGenerator.FeedbackStyle = .medium, intensity: CGFloat = 1.0) {
-        guard let generator = impactGenerators[style] else { return }
-        generator.impactOccurred(intensity: intensity)
-        generator.prepare() // Prepare for next use
-    }
+    private init() {}
     
     func lightImpact() {
-        impact(style: .light)
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
     }
     
     func mediumImpact() {
-        impact(style: .medium)
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
     }
     
     func heavyImpact() {
-        impact(style: .heavy)
-    }
-    
-    func sliderChanged() {
-        impact(style: .light, intensity: 0.5)
-    }
-    
-    func selection() {
-        selectionGenerator.selectionChanged()
-        selectionGenerator.prepare() // Prepare for next use
-    }
-    
-    func notification(type: UINotificationFeedbackGenerator.FeedbackType) {
-        notificationGenerator.notificationOccurred(type)
-        notificationGenerator.prepare() // Prepare for next use
+        let generator = UIImpactFeedbackGenerator(style: .heavy)
+        generator.impactOccurred()
     }
     
     func success() {
-        notification(type: .success)
-    }
-    
-    func warning() {
-        notification(type: .warning)
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
     }
     
     func error() {
-        notification(type: .error)
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+    }
+    
+    func warning() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
     }
 }
