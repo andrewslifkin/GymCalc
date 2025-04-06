@@ -112,7 +112,7 @@ struct PlatesView: View {
                 .frame(height: 20)
             
             // Weight Input
-            WeightInput()
+            WeightInput(targetWeight: $calculator.targetWeight)
                 .onChange(of: calculator.targetWeight) { _, newValue in
                     weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
                 }
@@ -224,72 +224,6 @@ struct BarbellPresetCarousel: View {
     }
 }
 
-struct WeightInput: View {
-    @EnvironmentObject private var calculator: Calculator
-    @Environment(\.colorScheme) private var colorScheme
-    @FocusState private var isFocused: Bool
-    
-    private let formatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.minimumFractionDigits = 0
-        f.maximumFractionDigits = 2
-        return f
-    }()
-    
-    var body: some View {
-        HStack(spacing: 24) {
-            Button {
-                withAnimation {
-                    calculator.targetWeight = max(0, calculator.targetWeight - 1.25)
-                }
-            } label: {
-                Image(systemName: "minus")
-                    .font(.title)
-                    .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
-                    .background(Color.white.opacity(0.1))
-                    .clipShape(Circle())
-            }
-            
-            ZStack {
-                TextField("Weight", value: $calculator.targetWeight, formatter: formatter)
-                    .frame(minWidth: 140)
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .multilineTextAlignment(.center)
-                    .keyboardType(.decimalPad)
-                    .focused($isFocused)
-                    .padding(.vertical, 12)
-                    .background(Color.white.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            Button("Done") {
-                                isFocused = false
-                            }
-                            .font(.headline)
-                        }
-                    }
-            }
-            
-            Button {
-                withAnimation {
-                    calculator.targetWeight = min(1000, calculator.targetWeight + 1.25)
-                }
-            } label: {
-                Image(systemName: "plus")
-                    .font(.title)
-                    .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
-                    .background(Color.white.opacity(0.1))
-                    .clipShape(Circle())
-            }
-        }
-        .padding(.vertical, 12)
-    }
-}
-
 struct MaxRepView: View {
     @EnvironmentObject private var calculator: Calculator
     @FocusState private var focusedField: Field?
@@ -302,8 +236,8 @@ struct MaxRepView: View {
         VStack(spacing: 24) {
             Spacer()
                 .frame(height: 20)
-            // Weight Input (reused from PlatesView)
-            WeightInput()
+            // Weight Input
+            WeightInput(targetWeight: $calculator.targetWeight)
             
             // Rep Count
             VStack(spacing: 16) {
@@ -428,4 +362,4 @@ struct MaxRepView: View {
     ContentView()
         .environmentObject(Calculator())
         .preferredColorScheme(.dark)
-}
+} 
