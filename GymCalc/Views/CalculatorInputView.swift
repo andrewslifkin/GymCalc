@@ -1,121 +1,11 @@
 import SwiftUI
 
-@available(iOS 16.0, *)
-struct WeightInput: View {
-    @Binding var targetWeight: Double
-    @State private var showingCalculator = false
-    @State private var previousWeight: Double = 0
-    @State private var isAnimating = false
-    
-    private let formatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.minimumFractionDigits = 0
-        f.maximumFractionDigits = 2
-        return f
-    }()
-    
-    var body: some View {
-        HStack(spacing: 0) {
-            // Minus button
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    targetWeight = max(0, targetWeight - 1.25)
-                }
-            } label: {
-                Image(systemName: "minus")
-                    .font(.system(size: 24, weight: .medium))
-                    .frame(width: 56, height: 56)
-                    .background(Color(white: 0.15))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            
-            // Weight display
-            Button {
-                showingCalculator = true
-            } label: {
-                HStack(spacing: 0) {
-                    Spacer()
-                    NumberView(value: targetWeight, previousValue: previousWeight, isAnimating: $isAnimating)
-                        .frame(minWidth: 140)
-                        .onChange(of: targetWeight) { oldValue, newValue in
-                            previousWeight = oldValue
-                            isAnimating = true
-                            // Reset animation flag after animation completes
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                isAnimating = false
-                            }
-                        }
-                    Spacer()
-                }
-                .frame(height: 56)
-            }
-            .buttonStyle(.plain)
-            .sheet(isPresented: $showingCalculator) {
-                CalculatorInputView(value: $targetWeight)
-                    .presentationDetents([.medium])
-                    .presentationDragIndicator(.automatic)
-            }
-            
-            // Plus button
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    targetWeight += 1.25
-                }
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .medium))
-                    .frame(width: 56, height: 56)
-                    .background(Color(white: 0.15))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-        }
-        .foregroundStyle(.white)
-    }
-}
-
-struct NumberView: View {
-    let value: Double
-    let previousValue: Double
-    @Binding var isAnimating: Bool
-    
-    private let formatter: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.minimumFractionDigits = 0
-        f.maximumFractionDigits = 2
-        return f
-    }()
-    
-    var body: some View {
-        Text(formattedValue)
-            .font(.system(size: 48, weight: .medium))
-            .monospacedDigit()
-            .contentTransition(.numericText())
-            .animation(.smooth, value: value)
-    }
-    
-    private var formattedValue: String {
-        formatter.string(from: NSNumber(value: value)) ?? "0"
-    }
-}
-
-extension StringProtocol {
-    subscript(safe offset: Int) -> Character? {
-        guard offset >= 0, offset < count else { return nil }
-        return self[index(startIndex, offsetBy: offset)]
-    }
-}
-
-// Calculator Input View
-struct CalculatorInputView: View {
+public struct CalculatorInputView: View {
     @Binding var value: Double
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     
-    init(value: Binding<Double>) {
+    public init(value: Binding<Double>) {
         self._value = value
     }
     
@@ -138,7 +28,7 @@ struct CalculatorInputView: View {
         [.delete, .zero, .decimal]
     ]
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 20) {
             // Keypad
             VStack(spacing: 12) {
@@ -311,12 +201,5 @@ private struct CalculatorButtonView: View {
             .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
         }
         .buttonStyle(.plain)
-    }
-}
-
-#Preview {
-    ZStack {
-        Color.black
-        WeightInput(targetWeight: Binding.constant(213.25))
     }
 } 
