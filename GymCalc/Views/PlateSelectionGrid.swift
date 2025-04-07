@@ -7,45 +7,36 @@ struct PlateSelectionGrid: View {
     private let columns = [
         GridItem(.flexible()),
         GridItem(.flexible()),
-        GridItem(.flexible()),
         GridItem(.flexible())
     ]
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Text("Available Plates")
-                        .font(.title3)
+            ZStack {
+                Color.black.ignoresSafeArea()
+                
+                VStack(spacing: 16) {
+                    Text("Select Available Plates")
+                        .font(.title2)
                         .fontWeight(.semibold)
-                    Spacer()
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-                .padding()
-                .background(Color.black)
-                
-                Divider()
-                    .background(Color.gray.opacity(0.2))
-                
-                // Grid
-                ScrollView {
-                    LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(calculator.availablePlateWeights.sorted(), id: \.self) { weight in
-                            PlatePill(plateWeight: .constant(weight))
-                                .environmentObject(calculator)
+                        .foregroundColor(.white)
+                        .padding(.top)
+                    
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(calculator.availablePlates.sorted(), id: \.self) { weight in
+                                PlatePill(plateWeight: .constant(weight))
+                                    .environmentObject(calculator)
+                            }
                         }
+                        .padding()
                     }
-                    .padding()
                 }
             }
-            .background(Color.black)
-            .presentationDetents([.height(280)])
-            .presentationDragIndicator(.visible)
-            .presentationBackground(Color.black)
-            .presentationCornerRadius(32)
+            .navigationBarItems(trailing: Button("Done") {
+                dismiss()
+            })
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

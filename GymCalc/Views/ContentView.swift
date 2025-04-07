@@ -100,6 +100,7 @@ struct PlatesView: View {
     @EnvironmentObject private var calculator: Calculator
     @State private var showAddBarbell = false
     @State private var showPlateSelection = false
+    @State private var showEquipmentSelection = false
     @FocusState private var focusedField: Field?
     @State private var weightSuggestion: WeightSuggestion?
     
@@ -126,37 +127,30 @@ struct PlatesView: View {
                         .transition(.opacity)
                 }
                 
-                // Barbell Preset Carousel
-                BarbellPresetCarousel()
-                
                 Divider()
                     .padding(.horizontal)
                 
                 // Available Plates Button
-                Button {
-                    showPlateSelection = true
-                } label: {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Available Plates")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                            Text(calculator.selectedPlateWeights.sorted()
-                                .map { String(format: "%.1f", $0) }
-                                .joined(separator: ", ") + "kg")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                                .lineLimit(1)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.up")
-                            .foregroundColor(.gray)
+                HStack(spacing: 20) {
+                    Button {
+                        showPlateSelection = true
+                    } label: {
+                        IconButtonLabel(icon: "square.grid.2x2", label: "Plates")
                     }
-                    .padding()
-                    .background(Color.white.opacity(0.05))
-                    .cornerRadius(12)
+                    
+                    Button {
+                        showEquipmentSelection = true
+                    } label: {
+                        IconButtonLabel(icon: "dumbbell", label: "Equipment")
+                    }
                 }
                 .padding(.horizontal)
+                .sheet(isPresented: $showEquipmentSelection) {
+                    EquipmentSelectionView(weightSuggestion: $weightSuggestion)
+                }
+                .sheet(isPresented: $showPlateSelection) {
+                    PlateSelectionGrid()
+                }
                 
                 // Plates Display
                 if !calculator.platesPerSide.isEmpty {
@@ -169,9 +163,6 @@ struct PlatesView: View {
                         .padding(.horizontal)
                 }
             }
-        }
-        .sheet(isPresented: $showPlateSelection) {
-            PlateSelectionGrid()
         }
     }
 }
@@ -194,55 +185,6 @@ struct WhiteTintToggleStyle: ToggleStyle {
                 .onTapGesture {
                     configuration.isOn.toggle()
                 }
-        }
-    }
-}
-
-struct BarbellPresetCarousel: View {
-    @EnvironmentObject private var calculator: Calculator
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Select Equipment")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-                .padding(.horizontal)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(calculator.availableBarbells.filter(\.isVisible)) { barbell in
-                        Button {
-                            withAnimation {
-                                calculator.selectedBarbell = barbell
-                                HapticManager.shared.lightImpact()
-                            }
-                        } label: {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(barbell.name)
-                                    .font(.headline)
-                                    .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .blue : .gray)
-                                    .lineLimit(1)
-                                
-                                Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
-                                    .font(.subheadline)
-                                    .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .blue.opacity(0.8) : .gray)
-                            }
-                            .frame(width: 160)
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(calculator.selectedBarbell.id == barbell.id ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(calculator.selectedBarbell.id == barbell.id ? Color.blue.opacity(0.3) : Color.gray.opacity(0.1), lineWidth: 1)
-                            )
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
         }
     }
 }
@@ -380,4 +322,24 @@ struct MaxRepView: View {
     ContentView()
         .environmentObject(Calculator())
         .preferredColorScheme(.dark)
+}
+
+private struct IconButtonLabel: View {
+    let icon: String
+    let label: String
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(.white.opacity(0.8))
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(Color.white.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
 } 
