@@ -5,65 +5,69 @@ struct PlatePill: View {
     @Binding var plateWeight: Double
     @State private var isPressed = false
     
+    private var isSelected: Bool {
+        calculator.selectedPlateWeights.contains(plateWeight)
+    }
+    
     var body: some View {
         Button {
-            withAnimation {
-                // Toggle plate selection
-                if calculator.selectedPlateWeights.contains(plateWeight) {
+            withAnimation(.spring(response: 0.3)) {
+                if isSelected {
                     calculator.selectedPlateWeights.removeAll { $0 == plateWeight }
                 } else {
                     calculator.selectedPlateWeights.append(plateWeight)
                 }
-                
-                // Invalidate cache to force recalculation
                 calculator.cachedPlates = nil
-                
                 HapticManager.shared.lightImpact()
             }
         } label: {
-            Text("\(plateWeight, specifier: "%.1f")kg")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .frame(minWidth: 80)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(
-                    calculator.selectedPlateWeights.contains(plateWeight) 
-                    ? Color.blue.opacity(0.1) 
-                    : Color.gray.opacity(0.1)
-                )
-                .foregroundColor(
-                    calculator.selectedPlateWeights.contains(plateWeight) 
-                    ? .blue 
-                    : .gray
-                )
-                .clipShape(Capsule())
-                .overlay(
-                    Capsule()
-                        .stroke(
-                            calculator.selectedPlateWeights.contains(plateWeight) 
-                            ? Color.blue.opacity(0.3) 
-                            : Color.gray.opacity(0.2), 
-                            lineWidth: 1
-                        )
-                )
-                .scaleEffect(isPressed ? 0.95 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isPressed)
+            VStack(spacing: 4) {
+                Text("\(plateWeight, specifier: "%.1f")")
+                    .font(.system(.title3, design: .rounded))
+                    .fontWeight(.semibold)
+                Text("kg")
+                    .font(.caption)
+                    .fontWeight(.medium)
+            }
+            .frame(height: 64)
+            .frame(maxWidth: .infinity)
+            .foregroundColor(isSelected ? .blue : .gray)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color.blue.opacity(0.15) : Color.white.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.blue.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
+            )
+            .scaleEffect(isPressed ? 0.95 : 1.0)
         }
         .buttonStyle(PlainButtonStyle())
-        .pressAction {
-            isPressed = $0
-        }
+        .pressEvents(onPress: { isPressed = true }, onRelease: { isPressed = false })
     }
 }
 
-// Custom extension to add press state to buttons
+// Helper for press animation
 extension View {
-    func pressAction(onPress: @escaping (Bool) -> Void) -> some View {
-        self.gesture(
+    func pressEvents(onPress: @escaping () -> Void, onRelease: @escaping () -> Void) -> some View {
+        self.simultaneousGesture(
             DragGesture(minimumDistance: 0)
-                .onChanged { _ in onPress(true) }
-                .onEnded { _ in onPress(false) }
+                .onChanged { _ in
+                    onPress()
+                }
+                .onEnded { _ in
+                    onRelease()
+                }
         )
     }
+}
+
+#Preview {
+    HStack {
+        PlatePill(plateWeight: .constant(2.5))
+        PlatePill(plateWeight: .constant(5.0))
+    }
+    .padding()
+    .background(Color.black)
+    .environmentObject(Calculator())
 }

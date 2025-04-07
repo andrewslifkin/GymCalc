@@ -99,6 +99,7 @@ struct ContentView: View {
 struct PlatesView: View {
     @EnvironmentObject private var calculator: Calculator
     @State private var showAddBarbell = false
+    @State private var showPlateSelection = false
     @FocusState private var focusedField: Field?
     @State private var weightSuggestion: WeightSuggestion?
     
@@ -107,62 +108,70 @@ struct PlatesView: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
-                .frame(height: 20)
-            
-            // Weight Input
-            WeightInput(targetWeight: $calculator.targetWeight)
-                .onChange(of: calculator.targetWeight) { _, newValue in
-                    weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
-                }
-            
-            // Barbell Preset Carousel
-            BarbellPresetCarousel()
-            
-            Spacer()
-                .frame(height: 16)
-            
-            // Plates Display
-            PlateVisualizer(plateCounts: calculator.platesPerSide, unit: calculator.selectedUnit)
-                .transition(.opacity)
-            
-            if let suggestion = weightSuggestion, !suggestion.isAchievable {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("❌ The requested weight (\(suggestion.targetWeight, specifier: "%.1f")\(suggestion.unit.symbol)) is not achievable with standard plates.")
-                        .foregroundColor(.red)
-                        .font(.subheadline)
-                    
-                    HStack(spacing: 16) {
-                        Button {
-                            calculator.targetWeight = suggestion.lowerWeight
-                        } label: {
-                            Text("⬇️ \(suggestion.lowerWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.blue.opacity(0.1))
-                                .clipShape(Capsule())
-                        }
-                        
-                        Button {
-                            calculator.targetWeight = suggestion.higherWeight
-                        } label: {
-                            Text("🔼 \(suggestion.higherWeight, specifier: "%.1f")\(suggestion.unit.symbol)")
-                                .font(.subheadline)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(Color.blue.opacity(0.1))
-                                .clipShape(Capsule())
-                        }
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer()
+                    .frame(height: 20)
+                
+                // Weight Input
+                WeightInput(targetWeight: $calculator.targetWeight)
+                    .onChange(of: calculator.targetWeight) { _, newValue in
+                        weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
                     }
+                
+                // Weight Suggestion (if not achievable)
+                if let suggestion = weightSuggestion, !suggestion.isAchievable {
+                    WeightSuggestionView(suggestion: suggestion, targetWeight: $calculator.targetWeight)
+                        .padding(.horizontal)
+                        .transition(.opacity)
                 }
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                // Barbell Preset Carousel
+                BarbellPresetCarousel()
+                
+                Divider()
+                    .padding(.horizontal)
+                
+                // Available Plates Button
+                Button {
+                    showPlateSelection = true
+                } label: {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Available Plates")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Text(calculator.selectedPlateWeights.sorted()
+                                .map { String(format: "%.1f", $0) }
+                                .joined(separator: ", ") + "kg")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .lineLimit(1)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.up")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.05))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                
+                // Plates Display
+                if !calculator.platesPerSide.isEmpty {
+                    PlateVisualizer(plateCounts: calculator.platesPerSide, unit: calculator.selectedUnit)
+                        .transition(.opacity)
+                        .padding(.horizontal)
+                        .padding(.vertical, 16)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                }
             }
-            
-            Spacer()
+        }
+        .sheet(isPresented: $showPlateSelection) {
+            PlateSelectionGrid()
         }
     }
 }
@@ -191,35 +200,49 @@ struct WhiteTintToggleStyle: ToggleStyle {
 
 struct BarbellPresetCarousel: View {
     @EnvironmentObject private var calculator: Calculator
-    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(calculator.availableBarbells.filter(\.isVisible)) { barbell in
-                    Button {
-                        withAnimation {
-                            calculator.selectedBarbell = barbell
-                            HapticManager.shared.lightImpact()
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Select Equipment")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+                .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(calculator.availableBarbells.filter(\.isVisible)) { barbell in
+                        Button {
+                            withAnimation {
+                                calculator.selectedBarbell = barbell
+                                HapticManager.shared.lightImpact()
+                            }
+                        } label: {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(barbell.name)
+                                    .font(.headline)
+                                    .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .blue : .gray)
+                                    .lineLimit(1)
+                                
+                                Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
+                                    .font(.subheadline)
+                                    .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .blue.opacity(0.8) : .gray)
+                            }
+                            .frame(width: 160)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(calculator.selectedBarbell.id == barbell.id ? Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(calculator.selectedBarbell.id == barbell.id ? Color.blue.opacity(0.3) : Color.gray.opacity(0.1), lineWidth: 1)
+                            )
                         }
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(barbell.name)
-                                .font(.headline)
-                                .foregroundColor(calculator.selectedBarbell.id == barbell.id ? .white : .gray)
-                            
-                            Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.vertical, 12)
-                        .padding(.horizontal, 16)
-                        .background(calculator.selectedBarbell.id == barbell.id ? Color.white.opacity(0.1) : Color.clear)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
     }
 }
@@ -268,13 +291,8 @@ struct MaxRepView: View {
                         .fontWeight(.bold)
                         .multilineTextAlignment(.center)
                         .frame(width: 60)
-                        .keyboardType(.numberPad)
+                        .textFieldStyle(.roundedBorder)
                         .focused($focusedField, equals: .reps)
-                        .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { obj in
-                            if let textField = obj.object as? UITextField {
-                                textField.selectedTextRange = textField.textRange(from: textField.beginningOfDocument, to: textField.endOfDocument)
-                            }
-                        }
                     
                     Button {
                         if calculator.repCount < 12 {

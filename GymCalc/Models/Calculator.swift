@@ -781,27 +781,65 @@ extension Calculator {
             }
         }
         
-        // Calculate higher weight
-        remainingWeight = perSideWeight
-        for plate in availablePlates.reversed() {
-            let plateCount = Int(ceil(remainingWeight / plate))
-            if plateCount > 0 && plateCount <= 10 {
-                higherWeight += Double(plateCount) * plate * 2
-                break
+        // Calculate higher weight by trying different plate combinations
+        var bestHigherWeight = Double.infinity
+        let combinations = generatePlateCombinations(availablePlates: availablePlates, targetWeight: perSideWeight)
+        
+        for combination in combinations {
+            let totalWeight = baseWeight + combination.reduce(0) { $0 + $1.0 * Double($1.1) } * 2
+            if totalWeight > targetInKg && totalWeight < bestHigherWeight {
+                bestHigherWeight = totalWeight
             }
         }
+        
+        higherWeight = bestHigherWeight != .infinity ? bestHigherWeight : (lowerWeight + (availablePlates.last ?? 0) * 2)
         
         // Convert weights back to selected unit
         let convertedLower = Weight(value: lowerWeight, unit: .kg).convert(to: selectedUnit).value
         let convertedHigher = Weight(value: higherWeight, unit: .kg).convert(to: selectedUnit).value
         
-        return WeightSuggestion(
+        // Cache and return the result
+        let result = WeightSuggestion(
             targetWeight: targetWeight,
             lowerWeight: convertedLower,
             higherWeight: convertedHigher,
             unit: selectedUnit,
             isAchievable: false
         )
+        lastAchievabilityCheck = (targetWeight, result)
+        return result
+    }
+    
+    // Helper function to generate possible plate combinations
+    private func generatePlateCombinations(availablePlates: [Double], targetWeight: Double) -> [[(Double, Int)]] {
+        var combinations: [[(Double, Int)]] = []
+        var currentCombination: [(Double, Int)] = []
+        
+        func backtrack(index: Int, remainingWeight: Double) {
+            // Base case: if we're close to or exceeded the target weight
+            if remainingWeight <= 0.1 {
+                combinations.append(currentCombination)
+                return
+            }
+            
+            // If we've tried all plates or have too many combinations
+            if index >= availablePlates.count || combinations.count >= 10 {
+                return
+            }
+            
+            let plate = availablePlates[index]
+            let maxPlates = min(Int(ceil(remainingWeight / plate)), 10)
+            
+            // Try different numbers of this plate
+            for count in 0...maxPlates {
+                currentCombination.append((plate, count))
+                backtrack(index: index + 1, remainingWeight: remainingWeight - Double(count) * plate)
+                currentCombination.removeLast()
+            }
+        }
+        
+        backtrack(index: 0, remainingWeight: targetWeight)
+        return combinations
     }
 }
 
