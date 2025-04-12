@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:GymCalc}",
+            "name": "Debug GymCalc",
+            "program": "${workspaceFolder:GymCalc}/.build/debug/GymCalc",
+            "preLaunchTask": "swift: Build Debug GymCalc"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:GymCalc}",
+            "name": "Release GymCalc",
+            "program": "${workspaceFolder:GymCalc}/.build/release/GymCalc",
+            "preLaunchTask": "swift: Build Release GymCalc"
+        }
+    ]
+}

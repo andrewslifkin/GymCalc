@@ -149,7 +149,7 @@ struct PlatesView: View {
                     EquipmentSelectionView(weightSuggestion: $weightSuggestion)
                 }
                 .sheet(isPresented: $showPlateSelection) {
-                    PlateSelectionGrid()
+                    PlateSelectionGrid(weightSuggestion: $weightSuggestion)
                 }
                 
                 // Plates Display

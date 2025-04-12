@@ -13,29 +13,30 @@ struct EquipmentSelectionView: View {
                         selectEquipment(barbell)
                     } label: {
                         HStack {
-                            Image(systemName: getEquipmentIcon(for: barbell.name))
-                                .font(.title2)
-                                .frame(width: 32)
-                            
+                            // Left side - Equipment info
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(barbell.name)
-                                    .font(.body)
-                                
+                                    .font(.headline)
                                 Text("\(barbell.weight.value, specifier: "%.1f") \(barbell.weight.unit.symbol)")
-                                    .font(.caption)
+                                    .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
                             
                             Spacer()
                             
-                            if calculator.selectedBarbell.id == barbell.id {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.blue)
+                            // Right side - Actions
+                            HStack(spacing: 16) {
+                                if calculator.selectedBarbell.id == barbell.id {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
                             }
                         }
                         .contentShape(Rectangle())
+                        .padding(.vertical, 8)
                     }
-                    .foregroundColor(.primary)
+                    .buttonStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                 }
             }
             .navigationTitle("Select Equipment")
@@ -48,13 +49,12 @@ struct EquipmentSelectionView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.height(CGFloat(min(72 * calculator.availableBarbells.filter(\.isVisible).count + 140, 600)))])
         .presentationDragIndicator(.visible)
     }
     
     private func selectEquipment(_ barbell: Barbell) {
         calculator.selectedBarbell = barbell
-        // Recalculate weight suggestion with new equipment
         weightSuggestion = calculator.checkWeightAchievability(targetWeight: calculator.targetWeight)
         dismiss()
     }
