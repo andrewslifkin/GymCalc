@@ -2,6 +2,7 @@ import SwiftUI
 
 @available(iOS 16.0, *)
 struct WeightInput: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     @Binding var targetWeight: Double
     @State private var showingCalculator = false
     @State private var previousWeight: Double = 0
@@ -24,12 +25,16 @@ struct WeightInput: View {
                 }
             } label: {
                 Image(systemName: "minus")
-                    .font(.system(size: 24, weight: .medium))
+                    .font(.system(size: 22, weight: .semibold))
                     .frame(width: 56, height: 56)
-                    .background(Color(white: 0.15))
-                    .clipShape(Circle())
+                    .foregroundColor(themeManager.iconColor)
+                    .background(
+                        Circle()
+                            .fill(themeManager.cardColor)
+                    )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Decrease weight")
             
             // Weight display
             Button {
@@ -38,6 +43,7 @@ struct WeightInput: View {
                 HStack(spacing: 0) {
                     Spacer()
                     NumberView(value: targetWeight, previousValue: previousWeight, isAnimating: $isAnimating)
+                        .foregroundStyle(themeManager.textColor)
                         .frame(minWidth: 140)
                         .onChange(of: targetWeight) { oldValue, newValue in
                             previousWeight = oldValue
@@ -52,8 +58,11 @@ struct WeightInput: View {
                 .frame(height: 56)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Current weight \(String(format: "%.1f", targetWeight))")
+            .accessibilityHint("Double tap to open numeric keypad")
             .sheet(isPresented: $showingCalculator) {
                 CalculatorInputView(value: $targetWeight)
+                    .environmentObject(themeManager)
                     .presentationDetents([.medium])
                     .presentationDragIndicator(.automatic)
             }
@@ -65,18 +74,23 @@ struct WeightInput: View {
                 }
             } label: {
                 Image(systemName: "plus")
-                    .font(.system(size: 24, weight: .medium))
+                    .font(.system(size: 22, weight: .semibold))
                     .frame(width: 56, height: 56)
-                    .background(Color(white: 0.15))
-                    .clipShape(Circle())
+                    .foregroundColor(themeManager.iconColor)
+                    .background(
+                        Circle()
+                            .fill(themeManager.cardColor)
+                    )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Increase weight")
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(themeManager.textColor)
     }
 }
 
 struct NumberView: View {
+    @EnvironmentObject private var themeManager: ThemeManager
     let value: Double
     let previousValue: Double
     @Binding var isAnimating: Bool
@@ -91,10 +105,12 @@ struct NumberView: View {
     
     var body: some View {
         Text(formattedValue)
-            .font(.system(size: 48, weight: .medium))
+            .font(.system(size: 48, weight: .semibold, design: .rounded))
+            .foregroundColor(themeManager.textColor)
             .monospacedDigit()
             .contentTransition(.numericText())
             .animation(.smooth, value: value)
+            .accessibilityHidden(true) // We provide this text via the parent's accessibilityLabel
     }
     
     private var formattedValue: String {
@@ -113,7 +129,7 @@ extension StringProtocol {
 struct CalculatorInputView: View {
     @Binding var value: Double
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var themeManager: ThemeManager
     
     init(value: Binding<Double>) {
         self._value = value
@@ -140,52 +156,66 @@ struct CalculatorInputView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Keypad
-            VStack(spacing: 12) {
-                ForEach(buttons, id: \.self) { row in
-                    HStack(spacing: 12) {
-                        ForEach(row, id: \.self) { button in
-                            CalculatorButtonView(button: button) {
-                                buttonTapped(button)
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
+            ZStack {
+                themeManager.backgroundColor.ignoresSafeArea()
+                
+                // Display area
+                HStack {
+                    Spacer()
+                    Text(displayValue)
+                        .font(.system(size: 48, weight: .medium))
+                        .foregroundColor(themeManager.textColor)
+                        .monospacedDigit()
+                        .padding()
                 }
                 
-                // Bottom row
-                HStack(spacing: 12) {
-                    Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            buttonTapped(.clear)
+                // Keypad
+                VStack(spacing: 12) {
+                    ForEach(buttons, id: \.self) { row in
+                        HStack(spacing: 12) {
+                            ForEach(row, id: \.self) { button in
+                                CalculatorButtonView(button: button, themeManager: themeManager) {
+                                    buttonTapped(button)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
                         }
-                    } label: {
-                        Text("C")
-                            .font(.system(size: 24, weight: .medium))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 64)
-                            .foregroundColor(.white)
-                            .background(Color.orange)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                     
-                    Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            dismiss()
+                    // Bottom row
+                    HStack(spacing: 12) {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                buttonTapped(.clear)
+                            }
+                        } label: {
+                            Text("C")
+                                .font(.system(size: 24, weight: .medium))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
+                                .foregroundColor(.white)
+                                .background(Color.orange)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
-                    } label: {
-                        Text("Done")
-                            .font(.system(size: 20, weight: .medium))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 64)
-                            .foregroundColor(.white)
-                            .background(Color.blue)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                        
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                dismiss()
+                            }
+                        } label: {
+                            Text("Done")
+                                .font(.system(size: 20, weight: .medium))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
+                                .foregroundColor(.white)
+                                .background(themeManager.accentColor)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                        }
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
         .onAppear {
             displayValue = formatter.string(from: NSNumber(value: value)) ?? "0"
@@ -287,30 +317,68 @@ private enum CalculatorButton: Hashable {
 
 private struct CalculatorButtonView: View {
     let button: CalculatorButton
+    let themeManager: ThemeManager
     let action: () -> Void
+    
     @State private var isPressed = false
-    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
-        Button(action: action) {
-            Group {
-                if button.isSystemImage {
-                    Image(systemName: "delete.left.fill")
-                        .font(.system(size: 20, weight: .medium))
-                } else {
-                    Text(button.text)
-                        .font(.system(size: 28, weight: .medium))
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 64)
-            .foregroundColor(button.foregroundColor)
-            .background(button.backgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .scaleEffect(isPressed ? 0.95 : 1)
-            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isPressed)
+        Button(action: {
+            // HapticManager.shared.lightImpact() 
+            action()
+        }) {
+            buttonLabel
         }
-        .buttonStyle(.plain)
+        // .buttonStyle(ScaleButtonStyle())
+    }
+    
+    // Button style based on type
+    private var buttonLabel: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(buttonColor)
+                .shadow(color: isPressed ? Color.clear : Color.black.opacity(0.1),
+                       radius: 4, x: 0, y: 4)
+                .frame(height: 64)
+            
+            // Button label
+            buttonContent
+                .foregroundColor(contentColor)
+                .font(.system(size: 24, weight: .medium))
+        }
+    }
+    
+    private var buttonColor: Color {
+        switch button {
+        case .clear:
+            return .red
+        case .delete:
+            return themeManager.currentTheme == .light ? Color.gray.opacity(0.3) : Color.gray.opacity(0.5)
+        default:
+            return themeManager.currentTheme == .light ? themeManager.cardColor : Color.gray.opacity(0.2)
+        }
+    }
+    
+    private var contentColor: Color {
+        switch button {
+        case .clear:
+            return .white
+        default:
+            return themeManager.textColor
+        }
+    }
+    
+    private var buttonContent: some View {
+        switch button {
+        case .number(let num):
+            return AnyView(Text("\(num)"))
+        case .decimal:
+            return AnyView(Text("."))
+        case .delete:
+            return AnyView(Image(systemName: "delete.left"))
+        case .clear:
+            return AnyView(Text("C"))
+        }
     }
 }
 

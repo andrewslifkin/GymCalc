@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AddBarbellView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var themeManager: ThemeManager
     
     let existingBarbell: Barbell?
     let onSave: (Barbell) -> Void
@@ -24,6 +25,14 @@ struct AddBarbellView: View {
         // Initialize state from existing barbell or with default values
         let initialBarbell = existingBarbell ?? Barbell(name: "", weight: Weight.kg(20), isCustom: true)
         
+        // Debug info
+        if let barbell = existingBarbell {
+            print("Debug: AddBarbellView received barbell with name: \(barbell.name), isCustom: \(barbell.isCustom)")
+        } else {
+            print("Debug: AddBarbellView received nil barbell")
+        }
+        
+        // Use underscore to initialize the @State properties directly
         _name = State(initialValue: initialBarbell.name)
         _weight = State(initialValue: String(format: "%.1f", initialBarbell.weight.value))
         _weightUnit = State(initialValue: initialBarbell.weight.unit)
@@ -51,49 +60,62 @@ struct AddBarbellView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section("Barbell Details") {
-                    TextField("Barbell Name", text: $name)
-                    
-                    HStack {
-                        TextField("Weight", text: $weight)
-                            .keyboardType(.decimalPad)
+            ZStack {
+                themeManager.backgroundColor.ignoresSafeArea()
+                
+                Form {
+                    Section("Barbell Details") {
+                        TextField("Barbell Name", text: $name)
+                            .autocorrectionDisabled()
+                            .textInputAutocapitalization(.words)
+                            .foregroundColor(themeManager.textColor)
                         
-                        Picker("Unit", selection: $weightUnit) {
-                            ForEach(Unit.allCases, id: \.self) { unit in
-                                Text(unit.symbol).tag(unit)
+                        HStack {
+                            TextField("Weight", text: $weight)
+                                .keyboardType(.decimalPad)
+                                .foregroundColor(themeManager.textColor)
+                            
+                            Picker("Unit", selection: $weightUnit) {
+                                ForEach(Unit.allCases, id: \.self) { unit in
+                                    Text(unit.symbol).tag(unit)
+                                }
                             }
+                            .foregroundColor(themeManager.textColor)
+                        }
+                        
+                        if let errorMessage = errorMessage {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .font(.caption)
                         }
                     }
-                    
-                    if let errorMessage = errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
+                    .listRowBackground(themeManager.cardColor)
                 }
-            }
-            .navigationTitle(existingBarbell == nil ? "Add Barbell" : "Edit Barbell")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                .scrollContentBackground(.hidden)
+                .navigationTitle(existingBarbell == nil ? "Add Barbell" : "Edit Barbell")
+                .navigationBarItems(
+                    leading: Button("Cancel", action: onCancel)
+                        .foregroundColor(themeManager.accentColor),
+                    trailing: Button("Save") {
                         guard isValidInput else { return }
                         
                         let newBarbell = Barbell(
                             id: existingBarbell?.id ?? UUID(),
                             name: name,
                             weight: weightUnit == .kg ? Weight.kg(Double(weight) ?? 0) : Weight.lbs(Double(weight) ?? 0),
-                            isCustom: true
+                            isCustom: existingBarbell?.isCustom ?? true,
+                            isVisible: true
                         )
+                        
+                        print("Debug: Saving barbell from form with name: \(name), isCustom: \(existingBarbell?.isCustom ?? true)")
                         
                         onSave(newBarbell)
                     }
-                }
+                    .foregroundColor(themeManager.accentColor)
+                )
             }
         }
+        .preferredColorScheme(themeManager.currentTheme.colorScheme)
     }
 }
 

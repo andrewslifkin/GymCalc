@@ -147,9 +147,23 @@ final class Calculator: ObservableObject {
     }
     
     func updateAvailableBarbell(_ barbell: Barbell) {
-        // Find and update the barbell
-        if let index = availableBarbells.firstIndex(where: { $0.id == barbell.id }) {
-            availableBarbells[index] = barbell
+        // Create a copy that preserves the original isCustom value
+        var updatedBarbell = barbell
+        
+        // If this is a preset barbell (from the standard set), ensure we don't mark it as custom
+        if let existingIndex = availableBarbells.firstIndex(where: { $0.id == barbell.id }) {
+            // Preserve the original isCustom flag
+            let originalIsCustom = availableBarbells[existingIndex].isCustom
+            updatedBarbell = Barbell(
+                id: barbell.id,
+                name: barbell.name,
+                weight: barbell.weight,
+                isCustom: originalIsCustom,
+                isVisible: true
+            )
+            
+            // Update the barbell
+            availableBarbells[existingIndex] = updatedBarbell
             
             // Persist changes
             Task {
@@ -163,7 +177,7 @@ final class Calculator: ObservableObject {
                         self.objectWillChange.send()
                     }
                     
-                    print("✅ Updated barbell: \(barbell.name)")
+                    print("✅ Updated barbell: \(updatedBarbell.name)")
                 } catch {
                     print("❌ Error encoding barbell: \(error)")
                 }
@@ -215,41 +229,9 @@ final class Calculator: ObservableObject {
     }
     
     func updateBarbellVisibility(for barbellId: UUID, isVisible: Bool) {
-        guard let index = availableBarbells.firstIndex(where: { $0.id == barbellId }) else {
-            return
-        }
-        
-        // Ensure at least one barbell remains visible
-        let visibleBarbellsCount = availableBarbells.filter { $0.isVisible }.count
-        if !isVisible && visibleBarbellsCount <= 1 {
-            return
-        }
-        
-        // Update barbell visibility
-        var updatedBarbells = availableBarbells
-        updatedBarbells[index].isVisible = isVisible
-        availableBarbells = updatedBarbells
-        
-        // If current selected barbell becomes invisible, select a visible one
-        if !selectedBarbell.isVisible {
-            selectedBarbell = availableBarbells.first(where: { $0.isVisible }) ?? .standard
-        }
-        
-        // Persist changes and notify observers
-        Task { @MainActor in
-            do {
-                let encoder = JSONEncoder()
-                let encodedBarbells = try encoder.encode(availableBarbells)
-                UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
-                
-                // Ensure UI updates
-                DispatchQueue.main.async {
-                    self.objectWillChange.send()
-                }
-            } catch {
-                print("Error encoding barbells: \(error)")
-            }
-        }
+        // All barbells are now always visible
+        // This function remains for backward compatibility but does nothing
+        return
     }
 
     // Modify initialization to handle visibility more robustly
@@ -260,25 +242,28 @@ final class Calculator: ObservableObject {
         // Try to load barbells from UserDefaults first
         if let data = UserDefaults.standard.data(forKey: Self.availableBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
-            _availableBarbells = decoded
-        } else {
-            // If no saved data, use presets with default visibility
-            _availableBarbells = Barbell.presets.map { 
-                var barbell = $0
-                barbell.isVisible = true
-                return barbell
+            // Ensure all loaded barbells are visible
+            var visibleBarbells = decoded
+            for i in 0..<visibleBarbells.count {
+                visibleBarbells[i].isVisible = true
             }
+            _availableBarbells = visibleBarbells
+        } else {
+            // If no saved data, create copies of presets that can be edited
+            _availableBarbells = Barbell.presets
         }
         
-        // Ensure at least one barbell is visible
-        if !_availableBarbells.contains(where: { $0.isVisible }) {
-            _availableBarbells[0].isVisible = true
-        }
+        // All barbells are visible so no need to check
         
         // Load custom barbells
         if let data = UserDefaults.standard.data(forKey: Self.customBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
-            self.customBarbells = decoded
+            // Ensure all custom barbells are visible
+            var visibleCustomBarbells = decoded
+            for i in 0..<visibleCustomBarbells.count {
+                visibleCustomBarbells[i].isVisible = true
+            }
+            self.customBarbells = visibleCustomBarbells
         }
         
         // Load plate weights with fallback to default
