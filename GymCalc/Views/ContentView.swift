@@ -5,6 +5,10 @@ struct ContentView: View {
     @Namespace private var namespace
     @FocusState private var focusedField: Field?
     
+    // Define accent color to match screenshot
+    private let accentColor = Color(red: 235/255, green: 235/255, blue: 25/255)
+    private let backgroundCardColor = Color(white: 0.15)
+    
     private enum Field {
         case platesWeight, maxRepWeight, repCount
     }
@@ -14,18 +18,22 @@ struct ContentView: View {
             mainView
                 .tabItem {
                     Label("Calculator", systemImage: "number")
+                        .environment(\.symbolVariants, .none)
                 }
             
             WeightConverterView()
                 .tabItem {
                     Label("Convert", systemImage: "arrow.left.arrow.right")
+                        .environment(\.symbolVariants, .none)
                 }
             
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
+                        .environment(\.symbolVariants, .none)
                 }
         }
+        .tint(accentColor)
     }
     
     var mainView: some View {
@@ -72,13 +80,13 @@ struct ContentView: View {
                     Text(mode.rawValue)
                         .font(.title3)
                         .fontWeight(.medium)
-                        .foregroundColor(calculator.mode == mode ? .white : .gray)
+                        .foregroundColor(calculator.mode == mode ? Color(hex: "#1d1d1d") : .gray)
                         .padding(.vertical, 12)
                         .padding(.horizontal, 24)
                         .background {
                             if calculator.mode == mode {
                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(Color.white.opacity(0.1))
+                                    .fill(accentColor)
                                     .matchedGeometryEffect(id: "MODE", in: namespace)
                             }
                         }
@@ -89,7 +97,7 @@ struct ContentView: View {
             }
         }
         .padding(8)
-        .background(Color.white.opacity(0.05))
+        .background(backgroundCardColor)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Calculator mode selection")
@@ -103,6 +111,9 @@ struct PlatesView: View {
     @State private var showEquipmentSelection = false
     @FocusState private var focusedField: Field?
     @State private var weightSuggestion: WeightSuggestion?
+    
+    private let accentColor = Color(red: 235/255, green: 235/255, blue: 25/255)
+    private let backgroundCardColor = Color(white: 0.15)
     
     private enum Field: Int {
         case weight
@@ -135,13 +146,13 @@ struct PlatesView: View {
                     Button {
                         showPlateSelection = true
                     } label: {
-                        IconButtonLabel(icon: "square.grid.2x2", label: "Plates")
+                        IconButtonLabel(icon: "square.grid.2x2", label: "Plates", accentColor: accentColor)
                     }
                     
                     Button {
                         showEquipmentSelection = true
                     } label: {
-                        IconButtonLabel(icon: "dumbbell", label: "Equipment")
+                        IconButtonLabel(icon: "dumbbell", label: "Equipment", accentColor: accentColor)
                     }
                 }
                 .padding(.horizontal)
@@ -156,10 +167,6 @@ struct PlatesView: View {
                 if !calculator.platesPerSide.isEmpty {
                     PlateVisualizer(plateCounts: calculator.platesPerSide, unit: calculator.selectedUnit)
                         .transition(.opacity)
-                        .padding(.horizontal)
-                        .padding(.vertical, 16)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(12)
                         .padding(.horizontal)
                 }
             }
@@ -327,19 +334,26 @@ struct MaxRepView: View {
 private struct IconButtonLabel: View {
     let icon: String
     let label: String
+    let accentColor: Color
+    
+    init(icon: String, label: String, accentColor: Color = Color(red: 235/255, green: 235/255, blue: 25/255)) {
+        self.icon = icon
+        self.label = label
+        self.accentColor = accentColor
+    }
     
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 24))
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.white)
             Text(label)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(Color.white.opacity(0.1))
+        .background(Color(white: 0.15))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 } 
