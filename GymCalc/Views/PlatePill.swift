@@ -21,7 +21,7 @@ struct PlatePill: View {
                 HapticManager.shared.lightImpact()
             }
         } label: {
-            Text("\(plateWeight, specifier: "%.1f")kg")
+            Text("\(plateWeight, specifier: "%.1f") \(calculator.selectedUnit.symbol)")
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .frame(minWidth: 80)

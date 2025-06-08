@@ -8,7 +8,7 @@ enum CalculatorMode: String, CaseIterable {
 struct Barbell: Identifiable, Codable, Equatable {
     var id: UUID
     let name: String
-    let weight: Weight
+    var weight: Weight
     let isCustom: Bool
     var isVisible: Bool
     
@@ -26,7 +26,7 @@ struct Barbell: Identifiable, Codable, Equatable {
     
     static let standard = Barbell(
         name: "Olympic/Men's 20kg",
-        weight: Weight(value: 20, unit: .kg) // 45 lbs
+        weight: Weight(value: 20, unit: .kg)
     )
     
     static let presets: [Barbell] = [
@@ -48,6 +48,25 @@ struct Barbell: Identifiable, Codable, Equatable {
         Barbell(name: "Swiss Bar", weight: Weight(value: 20, unit: .kg)),
         Barbell(name: "Cambered Bar", weight: Weight(value: 25, unit: .kg))
     ]
+}
+
+struct RepPercentage: Identifiable {
+    let id = UUID()
+    let percentage: Int
+    let weight: Double
+    let reps: Int
+    
+    var displayWeight: String {
+        String(format: "%.1f", weight.rounded(to: 1))
+    }
+}
+
+struct WeightSuggestion {
+    let targetWeight: Double
+    let lowerWeight: Double
+    let higherWeight: Double
+    let unit: Unit
+    let isAchievable: Bool
 }
 
 @MainActor
@@ -73,7 +92,6 @@ final class Calculator: ObservableObject {
                 if let encoded = try? JSONEncoder().encode(availablePlates) {
                     UserDefaults.standard.set(encoded, forKey: Self.availablePlatesKey)
                 }
-                // Sync with availablePlateWeights
                 availablePlateWeights = availablePlates
             }
         }
@@ -102,6 +120,68 @@ final class Calculator: ObservableObject {
     @Published var availablePlateWeights: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
     @Published var selectedPlateWeights: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
     
+    // MARK: - Custom Plate Management
+    func addCustomPlateWeight(_ weight: Double) {
+        guard !availablePlateWeights.contains(weight) else { return }
+        availablePlateWeights.append(weight)
+        availablePlateWeights.sort()
+        selectedPlateWeights.append(weight)
+        selectedPlateWeights.sort()
+        
+        // Save changes
+        availablePlates = availablePlateWeights
+        Task {
+            if let encoded = try? JSONEncoder().encode(selectedPlateWeights) {
+                UserDefaults.standard.set(encoded, forKey: Self.selectedPlatesKey)
+            }
+        }
+    }
+    
+    func removeCustomPlateWeight(_ weight: Double) {
+        // Only allow removal of custom plates (those not in standard sets)
+        let standardPlates = Weight.standardPlateWeights[selectedUnit] ?? []
+        guard !standardPlates.contains(weight) else { return }
+        
+        availablePlateWeights.removeAll { $0 == weight }
+        selectedPlateWeights.removeAll { $0 == weight }
+        
+        // Save changes
+        availablePlates = availablePlateWeights
+        Task {
+            if let encoded = try? JSONEncoder().encode(selectedPlateWeights) {
+                UserDefaults.standard.set(encoded, forKey: Self.selectedPlatesKey)
+            }
+        }
+    }
+    
+    func updatePlateVisibility(for plateWeight: Double, isEnabled: Bool) {
+        if isEnabled {
+            if !selectedPlateWeights.contains(plateWeight) {
+                selectedPlateWeights.append(plateWeight)
+                selectedPlateWeights.sort()
+            }
+        } else {
+            selectedPlateWeights.removeAll { $0 == plateWeight }
+        }
+        
+        Task {
+            if let encoded = try? JSONEncoder().encode(selectedPlateWeights) {
+                UserDefaults.standard.set(encoded, forKey: Self.selectedPlatesKey)
+            }
+        }
+    }
+    
+    func updateSelectedPlateWeights(_ weights: [Double]) {
+        selectedPlateWeights = weights
+        cachedPlates = nil
+        
+        Task {
+            if let encoded = try? JSONEncoder().encode(selectedPlateWeights) {
+                UserDefaults.standard.set(encoded, forKey: Self.selectedPlatesKey)
+            }
+        }
+    }
+    
     // MARK: - Custom Barbell Management
     func addCustomBarbell(_ barbell: Barbell) {
         customBarbells.append(barbell)
@@ -116,23 +196,19 @@ final class Calculator: ObservableObject {
     
     // MARK: - Available Barbell Management
     func addAvailableBarbell(_ barbell: Barbell) {
-        // Prevent duplicate barbells
         guard !availableBarbells.contains(where: { $0.id == barbell.id }) else {
             print("❌ Barbell already exists")
             return
         }
         
-        // Add the barbell
         availableBarbells.append(barbell)
         
-        // Persist changes
         Task {
             do {
                 let encoder = JSONEncoder()
                 let encodedBarbells = try encoder.encode(availableBarbells)
                 UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
                 
-                // Ensure UI updates on main thread
                 DispatchQueue.main.async {
                     self.objectWillChange.send()
                 }
@@ -145,18 +221,15 @@ final class Calculator: ObservableObject {
     }
     
     func updateAvailableBarbell(_ barbell: Barbell) {
-        // Find and update the barbell
         if let index = availableBarbells.firstIndex(where: { $0.id == barbell.id }) {
             availableBarbells[index] = barbell
             
-            // Persist changes
             Task {
                 do {
                     let encoder = JSONEncoder()
                     let encodedBarbells = try encoder.encode(availableBarbells)
                     UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
                     
-                    // Ensure UI updates on main thread
                     DispatchQueue.main.async {
                         self.objectWillChange.send()
                     }
@@ -167,40 +240,33 @@ final class Calculator: ObservableObject {
                 }
             }
         } else {
-            // If not found, add as a new barbell
             addAvailableBarbell(barbell)
         }
     }
     
     func removeAvailableBarbell(_ barbell: Barbell) {
-        // Prevent removing all barbells
         guard availableBarbells.count > 1 else {
             print("❌ Cannot remove the last barbell")
             return
         }
         
-        // Prevent removing non-custom barbells from presets
         guard barbell.isCustom else {
             print("❌ Cannot remove preset barbell")
             return
         }
         
-        // Remove the barbell
         availableBarbells.removeAll { $0.id == barbell.id }
         
-        // If the current selected barbell is removed, select the first available
         if selectedBarbell.id == barbell.id {
             selectedBarbell = availableBarbells.first ?? .standard
         }
         
-        // Persist changes
         Task {
             do {
                 let encoder = JSONEncoder()
                 let encodedBarbells = try encoder.encode(availableBarbells)
                 UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
                 
-                // Ensure UI updates on main thread
                 DispatchQueue.main.async {
                     self.objectWillChange.send()
                 }
@@ -217,30 +283,25 @@ final class Calculator: ObservableObject {
             return
         }
         
-        // Ensure at least one barbell remains visible
         let visibleBarbellsCount = availableBarbells.filter { $0.isVisible }.count
         if !isVisible && visibleBarbellsCount <= 1 {
             return
         }
         
-        // Update barbell visibility
         var updatedBarbells = availableBarbells
         updatedBarbells[index].isVisible = isVisible
         availableBarbells = updatedBarbells
         
-        // If current selected barbell becomes invisible, select a visible one
         if !selectedBarbell.isVisible {
             selectedBarbell = availableBarbells.first(where: { $0.isVisible }) ?? .standard
         }
         
-        // Persist changes and notify observers
         Task { @MainActor in
             do {
                 let encoder = JSONEncoder()
                 let encodedBarbells = try encoder.encode(availableBarbells)
                 UserDefaults.standard.set(encodedBarbells, forKey: Self.availableBarbellsKey)
                 
-                // Ensure UI updates
                 DispatchQueue.main.async {
                     self.objectWillChange.send()
                 }
@@ -249,18 +310,64 @@ final class Calculator: ObservableObject {
             }
         }
     }
-
-    // Modify initialization to handle visibility more robustly
-    init() {
-        // Default plate weights
-        let defaultPlates: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
+    
+    // MARK: - Unit Toggle
+    func toggleUnit() {
+        let newUnit: Unit = selectedUnit == .kg ? .lbs : .kg
         
-        // Try to load barbells from UserDefaults first
+        // Convert target weight
+        targetWeight = Weight(value: targetWeight, unit: selectedUnit).convert(to: newUnit).value
+        
+        // Convert barbell
+        selectedBarbell.weight = selectedBarbell.weight.convert(to: newUnit)
+        
+        // Convert available barbells
+        _availableBarbells = _availableBarbells.map { barbell in
+            var convertedBarbell = barbell
+            convertedBarbell.weight = convertedBarbell.weight.convert(to: newUnit)
+            return convertedBarbell
+        }
+        
+        // Get standard plates for new unit
+        let newStandardPlates = Weight.standardPlateWeights[newUnit] ?? []
+        
+        // Convert custom plates that aren't standard
+        let currentStandardPlates = Weight.standardPlateWeights[selectedUnit] ?? []
+        let customPlates = availablePlateWeights.filter { !currentStandardPlates.contains($0) }
+        let convertedCustomPlates = customPlates.map { 
+            Weight(value: $0, unit: selectedUnit).convert(to: newUnit).value 
+        }
+        
+        // Combine standard and converted custom plates
+        availablePlateWeights = (newStandardPlates + convertedCustomPlates).sorted()
+        availablePlates = availablePlateWeights
+        
+        // Convert selected plates
+        let convertedSelected = selectedPlateWeights.compactMap { plateWeight -> Double? in
+            if currentStandardPlates.contains(plateWeight) {
+                // For standard plates, use gym conversion
+                return Weight(value: plateWeight, unit: selectedUnit).convert(to: newUnit).value
+            } else {
+                // For custom plates, convert normally
+                return Weight(value: plateWeight, unit: selectedUnit).convert(to: newUnit).value
+            }
+        }
+        selectedPlateWeights = convertedSelected.filter { availablePlateWeights.contains($0) }
+        
+        // Update unit
+        selectedUnit = newUnit
+        
+        // Clear cached values
+        cachedPlates = nil
+    }
+    
+    init() {
+        let defaultPlates = Weight.standardPlateWeights[.kg] ?? [2.5, 5, 10, 15, 20, 25, 35, 45]
+        
         if let data = UserDefaults.standard.data(forKey: Self.availableBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
             _availableBarbells = decoded
         } else {
-            // If no saved data, use presets with default visibility
             _availableBarbells = Barbell.presets.map { 
                 var barbell = $0
                 barbell.isVisible = true
@@ -268,25 +375,21 @@ final class Calculator: ObservableObject {
             }
         }
         
-        // Ensure at least one barbell is visible
         if !_availableBarbells.contains(where: { $0.isVisible }) {
             _availableBarbells[0].isVisible = true
         }
         
-        // Load custom barbells
         if let data = UserDefaults.standard.data(forKey: Self.customBarbellsKey),
            let decoded = try? JSONDecoder().decode([Barbell].self, from: data) {
             self.customBarbells = decoded
         }
         
-        // Load plate weights with fallback to default
         if let data = UserDefaults.standard.data(forKey: Self.availablePlatesKey),
            let decoded = try? JSONDecoder().decode([Double].self, from: data),
            !decoded.isEmpty {
             self.availablePlates = decoded
             self.availablePlateWeights = decoded
             
-            // Load selected plates separately
             if let selectedData = UserDefaults.standard.data(forKey: Self.selectedPlatesKey),
                let selectedDecoded = try? JSONDecoder().decode([Double].self, from: selectedData),
                !selectedDecoded.isEmpty {
@@ -295,51 +398,42 @@ final class Calculator: ObservableObject {
                 self.selectedPlateWeights = decoded
             }
         } else {
-            // Use default plates if no saved data
             self.availablePlates = defaultPlates
             self.availablePlateWeights = defaultPlates
             self.selectedPlateWeights = defaultPlates
         }
         
-        // Ensure selected barbell is visible
         if !selectedBarbell.isVisible {
             selectedBarbell = _availableBarbells.first(where: { $0.isVisible }) ?? .standard
         }
         
-        // Validate and correct state
         validateState()
     }
     
     private func validateState() {
-        // Ensure at least one plate is selected
         if selectedPlateWeights.isEmpty {
-            selectedPlateWeights = [45.0]  // Default to 45 lbs/kg
+            selectedPlateWeights = [45.0]
         }
         
-        // Ensure all selected plates are in available plates
         selectedPlateWeights = selectedPlateWeights.filter { availablePlates.contains($0) }
     }
     
     func resetPlates() {
-        let defaultPlates: [Double] = [2.5, 5, 10, 15, 20, 25, 35, 45]
+        let defaultPlates = Weight.standardPlateWeights[selectedUnit] ?? []
         
-        // Reset available and selected plate weights
         availablePlates = defaultPlates
         availablePlateWeights = defaultPlates
         selectedPlateWeights = defaultPlates
         
-        // Persist changes
         Task { @MainActor in
             do {
                 let encoder = JSONEncoder()
                 
-                // Save both available and selected plates
                 let encodedAvailable = try encoder.encode(availablePlates)
                 let encodedSelected = try encoder.encode(selectedPlateWeights)
                 UserDefaults.standard.set(encodedAvailable, forKey: Self.availablePlatesKey)
                 UserDefaults.standard.set(encodedSelected, forKey: Self.selectedPlatesKey)
                 
-                // Trigger UI update
                 DispatchQueue.main.async {
                     self.objectWillChange.send()
                 }
@@ -392,14 +486,13 @@ final class Calculator: ObservableObject {
     
     @Published var targetWeight: Double = 100 {
         didSet {
-            // Only invalidate and notify if significant change
             if abs(oldValue - targetWeight) > 0.01 {
                 invalidateCache()
             }
         }
     }
     
-    @Published private(set) var selectedUnit: Unit = .kg {
+    @Published var selectedUnit: Unit = .kg {
         didSet { 
             if oldValue != selectedUnit {
                 invalidateCache() 
@@ -444,10 +537,9 @@ final class Calculator: ObservableObject {
         let id = UUID()
         let weight: Double
         let count: Int
-        let label: String?  // Optional label for equipment
-        let unit: Unit      // Add unit to support different weight units
+        let label: String?
+        let unit: Unit
         
-        // Convenience initializer for plates
         init(weight: Double, count: Int, unit: Unit = .kg) {
             self.weight = weight
             self.count = count
@@ -455,7 +547,6 @@ final class Calculator: ObservableObject {
             self.unit = unit
         }
         
-        // Initializer for equipment with label
         init(weight: Double, count: Int, label: String, unit: Unit = .kg) {
             self.weight = weight
             self.count = count
@@ -463,7 +554,6 @@ final class Calculator: ObservableObject {
             self.unit = unit
         }
         
-        // Formatted string representation
         var formattedString: String {
             if let label = label {
                 return "\(label): \(String(format: "%.1f", weight)) \(unit.symbol)"
@@ -474,16 +564,13 @@ final class Calculator: ObservableObject {
     }
     
     var platesPerSide: [PlateCount] {
-        // Use cached result if available and inputs haven't changed
         if !shouldRecalculatePlates(), let cached = cachedPlates {
             return cached
         }
         
-        // Convert all weights to kg for internal calculations
         let barWeightInKg = considerBarbellWeight ? selectedBarbell.weight.convert(to: .kg).value : 0
         let targetInKg = Weight(value: targetWeight, unit: selectedUnit).convert(to: .kg).value
         
-        // Convert plate weights to kg if needed
         let sortedPlates = selectedPlateWeights
             .map { selectedUnit == .kg ? $0 : Weight(value: $0, unit: selectedUnit).convert(to: .kg).value }
             .sorted(by: >)
@@ -494,7 +581,6 @@ final class Calculator: ObservableObject {
         let netWeight = targetInKg - barWeightInKg
         let halfNetWeight = netWeight / 2
         
-        // Try to build this weight with our plates
         var remainingWeight = halfNetWeight
         var plateCounts: [(weight: Double, count: Int)] = []
         
@@ -506,45 +592,22 @@ final class Calculator: ObservableObject {
             }
         }
         
-        // If we can't achieve this weight exactly, return empty
         if remainingWeight >= 0.1 {
             return []
         }
         
-        // Convert PlateCount objects back to the selected unit
         var result = plateCounts.map { plateWeight, count in
             let weightInSelectedUnit = Weight(value: plateWeight, unit: .kg).convert(to: selectedUnit).value
             return PlateCount(weight: weightInSelectedUnit, count: count, unit: selectedUnit)
         }
         
-        // Add barbell if needed
         if considerBarbellWeight {
             let barbellWeightInSelectedUnit = selectedBarbell.weight.convert(to: selectedUnit).value
-            result.insert(
-                PlateCount(
-                    weight: barbellWeightInSelectedUnit,
-                    count: 1,
-                    label: selectedBarbell.name,
-                    unit: selectedUnit
-                ),
-                at: 0
-            )
+            result.insert(PlateCount(weight: barbellWeightInSelectedUnit, count: 1, label: selectedBarbell.name, unit: selectedUnit), at: 0)
         }
         
-        // Cache the result
         cachedPlates = result
         return result
-    }
-    
-    struct RepPercentage: Identifiable {
-        let id = UUID()
-        let percentage: Int
-        let weight: Double
-        let reps: Int
-        
-        var displayWeight: String {
-            String(format: "%.1f", weight.rounded(to: 1))
-        }
     }
     
     var estimatedMax: Double {
@@ -594,154 +657,6 @@ final class Calculator: ObservableObject {
         cachedBreakdown = breakdown
         return breakdown
     }
-    
-    // MARK: - Plate Weight Management
-    func updateSelectedPlateWeights(_ weights: [Double]) {
-        selectedPlateWeights = weights
-        cachedPlates = nil
-    }
-    
-    func addAvailablePlateWeight(_ weight: Double) {
-        if !availablePlateWeights.contains(weight) {
-            availablePlateWeights.append(weight)
-        }
-    }
-    
-    func removeAvailablePlateWeight(_ weight: Double) {
-        availablePlateWeights.removeAll { $0 == weight }
-        selectedPlateWeights.removeAll { $0 == weight }
-    }
-    
-    func resetAvailablePlateWeights() {
-        availablePlateWeights = [2.5, 5, 10, 15, 20, 25, 35, 45]
-        selectedPlateWeights = availablePlateWeights
-    }
-    
-    // MARK: - Plate Visibility Management
-    func updatePlateVisibility(for plateWeight: Double, isEnabled: Bool) {
-        guard availablePlateWeights.contains(plateWeight) else {
-            return
-        }
-        
-        if isEnabled {
-            if !selectedPlateWeights.contains(plateWeight) {
-                selectedPlateWeights.append(plateWeight)
-            }
-        } else if selectedPlateWeights.count > 1 {
-            selectedPlateWeights.removeAll { $0 == plateWeight }
-        }
-        
-        // Persist changes to selected plates key
-        Task { @MainActor in
-            do {
-                let encoder = JSONEncoder()
-                let encodedPlates = try encoder.encode(selectedPlateWeights)
-                UserDefaults.standard.set(encodedPlates, forKey: Self.selectedPlatesKey)
-                
-                // Ensure UI updates on main thread
-                DispatchQueue.main.async {
-                    self.objectWillChange.send()
-                }
-            } catch {
-                print("Error encoding plate weights: \(error)")
-            }
-        }
-    }
-    
-    func addCustomPlateWeight(_ plateWeight: Double) {
-        // Prevent duplicates
-        guard !availablePlates.contains(plateWeight) else {
-            print("❌ Plate weight \(plateWeight) already exists")
-            return
-        }
-        
-        // Validate plate weight range
-        guard plateWeight > 0 && plateWeight <= 100 else {
-            print("❌ Invalid plate weight: \(plateWeight)")
-            return
-        }
-        
-        // Add plate weight and sort
-        availablePlates.append(plateWeight)
-        availablePlates.sort()
-        
-        // Automatically select the new plate
-        selectedPlateWeights.append(plateWeight)
-        selectedPlateWeights.sort()
-        
-        // Sync availablePlateWeights
-        availablePlateWeights = availablePlates
-        
-        // Persist changes
-        Task {
-            if let encoded = try? JSONEncoder().encode(availablePlates) {
-                UserDefaults.standard.set(encoded, forKey: Self.availablePlatesKey)
-            }
-        }
-        
-        // Trigger UI update
-        objectWillChange.send()
-    }
-    
-    func removeCustomPlateWeight(_ weight: Double) {
-        // Prevent removing standard plates
-        guard weight > 45 else {
-            print("❌ Cannot remove standard plate: \(weight)")
-            return
-        }
-        
-        // Remove from available and selected plates
-        availablePlates.removeAll { $0 == weight }
-        selectedPlateWeights.removeAll { $0 == weight }
-        
-        // Sync availablePlateWeights
-        availablePlateWeights = availablePlates
-        
-        // Ensure at least one plate remains
-        if selectedPlateWeights.isEmpty {
-            selectedPlateWeights = [45.0]
-        }
-        
-        // Persist changes
-        Task {
-            do {
-                let encoder = JSONEncoder()
-                let encodedPlates = try encoder.encode(availablePlates)
-                UserDefaults.standard.set(encodedPlates, forKey: Self.availablePlatesKey)
-                
-                // Ensure UI updates on main thread
-                DispatchQueue.main.async {
-                    self.objectWillChange.send()
-                }
-                
-                print("✅ Removed plate weight: \(weight)")
-            } catch {
-                print("❌ Error encoding plate removal: \(error)")
-            }
-        }
-    }
-    
-    // MARK: - Public Methods
-    func toggleMode() {
-        mode = mode == .plates ? .maxRep : .plates
-        HapticManager.shared.mediumImpact()
-    }
-    
-    func setUnit(_ unit: Unit) {
-        let currentWeight = Weight(value: targetWeight, unit: selectedUnit)
-        let newWeight = currentWeight.convert(to: unit)
-        selectedUnit = unit
-        targetWeight = newWeight.value
-        HapticManager.shared.lightImpact()
-    }
-}
-
-struct WeightSuggestion {
-    let targetWeight: Double
-    let lowerWeight: Double
-    let higherWeight: Double
-    let unit: Unit
-    let isAchievable: Bool
 }
 
 extension Calculator {

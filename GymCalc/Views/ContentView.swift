@@ -289,38 +289,46 @@ struct PlateWeightCarousel: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(calculator.availablePlateWeights, id: \.self) { plateWeight in
-                    Button {
-                        withAnimation {
-                            // Toggle plate selection and invalidate cache
-                            if calculator.selectedPlateWeights.contains(plateWeight) {
-                                calculator.selectedPlateWeights.removeAll { $0 == plateWeight }
-                            } else {
-                                calculator.selectedPlateWeights.append(plateWeight)
-                            }
-                            
-                            // Invalidate cache to force recalculation
-                            calculator.cachedPlates = nil
-                            
-                            HapticManager.shared.lightImpact()
-                        }
-                    } label: {
-                        Text("\(plateWeight, specifier: "%.1f")")
-                            .font(.system(.body, design: .rounded))
-                            .fontWeight(.medium)
-                            .foregroundStyle(plateTextColor(plateWeight))
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 16)
-                            .background(plateBackground(plateWeight))
-                            .clipShape(Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
-                    }
+                    plateButton(for: plateWeight)
                 }
             }
             .padding(.horizontal)
         }
+    }
+    
+    private func plateButton(for plateWeight: Double) -> some View {
+        Button {
+            withAnimation {
+                // Toggle plate selection and invalidate cache
+                if calculator.selectedPlateWeights.contains(plateWeight) {
+                    calculator.selectedPlateWeights.removeAll { $0 == plateWeight }
+                } else {
+                    calculator.selectedPlateWeights.append(plateWeight)
+                }
+                
+                // Invalidate cache to force recalculation
+                calculator.cachedPlates = nil
+                
+                HapticManager.shared.lightImpact()
+            }
+        } label: {
+            plateButtonLabel(for: plateWeight)
+        }
+    }
+    
+    private func plateButtonLabel(for plateWeight: Double) -> some View {
+        Text("\(plateWeight, specifier: "%.1f") \(calculator.selectedUnit.symbol)")
+            .font(.system(.body, design: .rounded))
+            .fontWeight(.medium)
+            .foregroundStyle(plateTextColor(plateWeight))
+            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .background(plateBackground(plateWeight))
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            )
     }
 }
 
@@ -335,6 +343,59 @@ struct WeightInput: View {
     
     var body: some View {
         VStack(spacing: 16) {
+            // Unit Toggle
+            HStack {
+                Spacer()
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        calculator.toggleUnit()
+                        HapticManager.shared.mediumImpact()
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Text("KG")
+                            .font(.system(.subheadline, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(calculator.selectedUnit == .kg ? .white : .gray)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                calculator.selectedUnit == .kg 
+                                ? Color.white.opacity(0.2) 
+                                : Color.clear
+                            )
+                            .clipShape(Capsule())
+                        
+                        Text("|")
+                            .foregroundColor(.gray)
+                            .font(.subheadline)
+                        
+                        Text("LB")
+                            .font(.system(.subheadline, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(calculator.selectedUnit == .lbs ? .white : .gray)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                calculator.selectedUnit == .lbs 
+                                ? Color.white.opacity(0.2) 
+                                : Color.clear
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .padding(6)
+                    .background(Color.white.opacity(0.05))
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+                }
+                .accessibilityLabel("Unit toggle")
+                .accessibilityHint("Currently set to \(calculator.selectedUnit.symbol). Double tap to switch between kilograms and pounds.")
+                .accessibilityAddTraits(.isButton)
+            }
+            
             // Weight Input with Plus/Minus Buttons
             HStack(spacing: 20) {
                 Button {
@@ -350,6 +411,8 @@ struct WeightInput: View {
                         .background(Color.white.opacity(0.1))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Decrease weight")
+                .accessibilityHint("Decreases the target weight by 2.5 \(calculator.selectedUnit.symbol)")
                 
                 NumberField(
                     value: $calculator.targetWeight, 
@@ -360,6 +423,8 @@ struct WeightInput: View {
                     weightSuggestion = calculator.checkWeightAchievability(targetWeight: newValue)
                     HapticManager.shared.lightImpact()
                 }
+                .accessibilityLabel("Target weight")
+                .accessibilityHint("Enter the target weight in \(calculator.selectedUnit.symbol)")
                 
                 Button {
                     withAnimation {
@@ -374,8 +439,10 @@ struct WeightInput: View {
                         .background(Color.white.opacity(0.1))
                         .clipShape(Circle())
                 }
+                .accessibilityLabel("Increase weight")
+                .accessibilityHint("Increases the target weight by 2.5 \(calculator.selectedUnit.symbol)")
             }
-            .padding(.vertical, 8)
+            
         }
     }
 }
@@ -394,14 +461,6 @@ struct MaxRepView: View {
                 .frame(height: 20)
             // Weight Input (reused from PlatesView)
             WeightInput()
-                .toolbar {
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button("Done") {
-                            focusedField = nil
-                        }
-                    }
-                }
             
             // Rep Count
             VStack(spacing: 16) {
@@ -518,6 +577,14 @@ struct MaxRepView: View {
                 }
             }
             Spacer()
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    focusedField = nil
+                }
+            }
         }
     }
 }

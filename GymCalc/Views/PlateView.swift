@@ -4,17 +4,29 @@ struct PlateView: View {
     let plateWeight: Double
     let unit: Unit
     
-    private func plateColor(_ weight: Double) -> Color {
-        switch weight {
-        case 2.5: return .blue
-        case 5: return .green
-        case 10: return .yellow
-        case 15: return .orange
-        case 20: return .red
-        case 25: return .purple
-        case 35: return .gray
-        case 45: return .black
-        default: return .gray
+    private func plateColor(_ weight: Double, unit: Unit) -> Color {
+        switch unit {
+        case Unit.kg:
+            switch weight {
+            case 1.25: return .blue
+            case 2.5: return .green
+            case 5.0: return .yellow
+            case 10.0: return .orange
+            case 15.0: return .red
+            case 20.0: return .purple
+            case 25.0: return .gray
+            default: return .gray
+            }
+        case Unit.lbs:
+            switch weight {
+            case 2.5: return .blue
+            case 5.0: return .green
+            case 10.0: return .yellow
+            case 25.0: return .orange
+            case 35.0: return .red
+            case 45.0: return .purple
+            default: return .gray
+            }
         }
     }
     
@@ -25,7 +37,7 @@ struct PlateView: View {
                 .fontWeight(.bold)
                 .foregroundColor(.white)
                 .frame(width: 60, height: 60)
-                .background(plateColor(plateWeight))
+                .background(plateColor(plateWeight, unit: unit))
                 .clipShape(Circle())
             
             Text("× 1")
@@ -36,6 +48,9 @@ struct PlateView: View {
 }
 
 #Preview {
-    PlateView(plateWeight: 45, unit: .kg)
-        .preferredColorScheme(.dark)
+    VStack(spacing: 20) {
+        PlateView(plateWeight: 45, unit: Unit.lbs)
+        PlateView(plateWeight: 20, unit: Unit.kg)
+    }
+    .preferredColorScheme(.dark)
 }
