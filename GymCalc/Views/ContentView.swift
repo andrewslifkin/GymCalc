@@ -9,17 +9,41 @@ struct ContentView: View {
         case platesWeight, maxRepWeight, repCount
     }
     
+    enum Tab: String, CaseIterable {
+        case calculator
+        case settings
+        
+        var label: String {
+            switch self {
+            case .calculator: return "CALCULATOR"
+            case .settings: return "SETTINGS"
+            }
+        }
+        
+        var systemImage: String {
+            switch self {
+            case .calculator: return "dumbbell"
+            case .settings: return "gearshape"
+            }
+        }
+    }
+    
+    @State private var selectedTab: Tab = .calculator
+    
     var body: some View {
-        TabView {
-            mainView
-                .tabItem {
-                    Label("Calculator", systemImage: "number")
+        VStack(spacing: 0) {
+            Group {
+                switch selectedTab {
+                case .calculator:
+                    mainView
+                case .settings:
+                    SettingsView()
                 }
-            
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
+            }
+            Spacer(minLength: 0)
+            CustomTabBar(selectedTab: $selectedTab)
+                .padding(.bottom, 8)
+                .background(Color(.systemBackground).opacity(0.95).ignoresSafeArea(edges: .bottom))
         }
     }
     
@@ -495,6 +519,47 @@ struct MaxRepView: View {
             }
             Spacer()
         }
+    }
+}
+
+struct CustomTabBar: View {
+    @Binding var selectedTab: ContentView.Tab
+    
+    var body: some View {
+        HStack(spacing: 40) {
+            ForEach(ContentView.Tab.allCases, id: \ .self) { tab in
+                Button(action: {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        selectedTab = tab
+                    }
+                }) {
+                    if selectedTab == tab {
+                        HStack(spacing: 6) {
+                            Image(systemName: tab.systemImage)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.gray)
+                            Text(tab.label)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(Color.gray.opacity(0.15))
+                        .clipShape(Capsule())
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    } else {
+                        Image(systemName: tab.systemImage)
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundColor(.gray.opacity(0.7))
+                            .padding(8)
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
     }
 }
 
