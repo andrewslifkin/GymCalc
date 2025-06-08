@@ -596,7 +596,7 @@ struct CustomTabBar: View {
         HStack(spacing: 40) {
             ForEach(ContentView.Tab.allCases, id: \ .self) { tab in
                 Button(action: {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    withAnimation(.easeInOut(duration: 0.22)) {
                         selectedTab = tab
                     }
                 }) {
@@ -613,7 +613,7 @@ struct CustomTabBar: View {
                         .padding(.horizontal, 16)
                         .background(Color.gray.opacity(0.15))
                         .clipShape(Capsule())
-                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                        .transition(.opacity.combined(with: .scale))
                     } else {
                         Image(systemName: tab.systemImage)
                             .font(.system(size: 18, weight: .regular))
@@ -627,6 +627,7 @@ struct CustomTabBar: View {
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
         .padding(.top, 8)
+        .animation(.easeInOut(duration: 0.22), value: selectedTab)
     }
 }
 
